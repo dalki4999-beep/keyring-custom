@@ -30,7 +30,7 @@
 
     .main-layout { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 800px; width: 100%; align-items: flex-start; }
     
-    /* 캔버스 프리뷰 영역 (모바일 첫화면 한눈 피팅 축소) */
+    /* 캔버스 프리뷰 영역 */
     .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 10px; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 250px; }
     .canvas-container { position: relative; width: 166px; height: 454px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
@@ -48,7 +48,7 @@
     .btn-delete { background: #FF5252; color: white; }
     .btn-cancel { background: #eee; color: #666; margin-top: 2px; }
 
-    /* 컨트롤 영역 모바일 피팅 조절 */
+    /* 컨트롤 영역 */
     .controls-section { flex: 1; min-width: 270px; max-width: 320px; width: 100%; background: #fff; padding: 14px; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 12px; font-family: 'Pretendard', sans-serif; }
     .control-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
     .control-group label { font-weight: 700; font-size: 0.85rem; color: #333; }
@@ -58,7 +58,7 @@
     .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.15s ease; }
     .color-btn.active { border-color: #000; transform: scale(1.12); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
-    /* 모바일 입력 박스 레이아웃 */
+    /* 입력 박스 레이아웃 */
     .input-wrapper { display: flex; gap: 6px; align-items: center; width: 100%; }
     .input-text { flex: 1; min-width: 0; padding: 8px 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; font-family: 'ManbokFont', sans-serif; }
     .input-text.normal-font { font-family: 'Pretendard', sans-serif; }
@@ -139,7 +139,7 @@
         </div>
       </div>
 
-      <!-- 3. 문구 입력 (안내 및 8자 제한 연동) -->
+      <!-- 3. 문구 입력 -->
       <div class="control-group">
         <label>3. 하단 문구 입력 (하트 포함 8자까지)</label>
         <div class="input-wrapper">
@@ -223,7 +223,7 @@
     }
 
     function insertHeart(symbol) {
-      if (textInput.value.length >= 8) return; // 8자 제한
+      if (textInput.value.length >= 8) return;
       const start = textInput.selectionStart;
       const end = textInput.selectionEnd;
       const text = textInput.value;
@@ -306,8 +306,8 @@
       targetCtx.restore();
     }
 
-    // 통합 렌더링 엔진 (문구 이탈 방지 클리핑 적용)
-    function renderEngine(targetCtx, isForDownload = false, scaleFactor = 1) {
+    // 통합 렌더링 엔진 (저장 시 상단 헤더 띠에 주문정보 자동 인쇄)
+    function renderEngine(targetCtx, isForDownload = false, scaleFactor = 1, headerOffset = 0) {
       const sM2P = M2P * scaleFactor;
       const sPrintW = printW * scaleFactor;
       const sPrintH = printH * scaleFactor;
@@ -316,13 +316,28 @@
       const sGapY = gapY * scaleFactor;
       const sSlotX = slotX * scaleFactor;
       const sHoleX = holeX * scaleFactor;
-      const sHoleY = holeY * scaleFactor;
+      const sHoleY = (holeY * scaleFactor) + headerOffset;
       const sHoleDotRadius = holeDotRadius * scaleFactor;
-      const sStartY = startY * scaleFactor;
+      const sStartY = (startY * scaleFactor) + headerOffset;
 
-      // 1. 배경
+      // 0. 저장 시 상단 주문자 정보 헤더 띠 렌더링
+      if (isForDownload && headerOffset > 0) {
+        const channel = document.querySelector('input[name="channel"]:checked').value;
+        const orderer = document.getElementById('ordererInput').value.trim() || '무명';
+
+        targetCtx.fillStyle = '#1e293b'; // 깔끔한 다크 브라운 네이비 띠
+        targetCtx.fillRect(0, 0, sPrintW, headerOffset);
+
+        targetCtx.fillStyle = '#ffffff';
+        targetCtx.font = `bold ${28 * scaleFactor}px Pretendard, sans-serif`;
+        targetCtx.textAlign = 'center';
+        targetCtx.textBaseline = 'middle';
+        targetCtx.fillText(`[${channel}] ${orderer}님 시안`, sPrintW / 2, headerOffset / 2);
+      }
+
+      // 1. 키링 배경
       targetCtx.fillStyle = bgColor;
-      targetCtx.fillRect(0, 0, sPrintW, sPrintH);
+      targetCtx.fillRect(0, headerOffset, sPrintW, sPrintH);
 
       // 2. 워터마크
       if (!isForDownload) {
@@ -359,7 +374,7 @@
         targetCtx.restore();
       }
 
-      // 4. 하단 문구 (양옆 1.5mm 안전영역 내 바깥 잘림 방지 클리핑)
+      // 4. 하단 문구
       const lastSlotY = sStartY + 3 * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
@@ -367,10 +382,9 @@
       if (text) {
         targetCtx.save();
         
-        // 문구 출력 안전 영역 락 (양옆 1.5mm 여백 확보하여 잘림 원천 차단)
         const safeMargin = 1.5 * sM2P;
         targetCtx.beginPath();
-        targetCtx.rect(safeMargin, lastSlotY, sPrintW - (safeMargin * 2), sPrintH - lastSlotY);
+        targetCtx.rect(safeMargin, lastSlotY, sPrintW - (safeMargin * 2), (sPrintH + headerOffset) - lastSlotY);
         targetCtx.clip();
 
         const textColor = document.querySelector('input[name="textColor"]:checked').value;
@@ -427,7 +441,7 @@
     }
 
     function drawCanvas() {
-      renderEngine(ctx, false, 1);
+      renderEngine(ctx, false, 1, 0);
     }
 
     let isDragging = false;
@@ -564,7 +578,7 @@
     window.addEventListener('touchmove', handleMove, { passive: false });
     window.addEventListener('touchend', () => { isDragging = false; initialPinchDist = null; });
 
-    // PC/모바일 환경 자동 판별 다운로드
+    // 시안 상단 헤더 띠 포함 고화질 저장 로직
     function downloadDesign() {
       closeModal();
       
@@ -573,15 +587,18 @@
       const fileName = `${channel}_${orderer}_네컷키링_시안.png`;
 
       const highResScale = 4;
+      const headerOffsetPX = 100 * highResScale; // 400px 높이의 상단 헤더 띠 영역
+
       const highResCanvas = document.createElement('canvas');
       highResCanvas.width = canvas.width * highResScale;   
-      highResCanvas.height = canvas.height * highResScale; 
+      highResCanvas.height = (canvas.height * highResScale) + headerOffsetPX; 
       
       const highResCtx = highResCanvas.getContext('2d');
       highResCtx.imageSmoothingEnabled = true;
       highResCtx.imageSmoothingQuality = 'high';
 
-      renderEngine(highResCtx, true, highResScale);
+      // 저장용 헤더 포함 렌더링 호출
+      renderEngine(highResCtx, true, highResScale, headerOffsetPX);
 
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|KAKAOTALK/i.test(navigator.userAgent);
       const dataUrl = highResCanvas.toDataURL('image/png', 1.0);
