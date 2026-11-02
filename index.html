@@ -44,7 +44,7 @@
     .btn-cancel { background: #eee; color: #666; }
 
     /* 컨트롤 영역 */
-    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 18px; font-family: 'Pretendard', sans-serif; }
+    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 16px; font-family: 'Pretendard', sans-serif; }
     .control-group { display: flex; flex-direction: column; gap: 8px; }
     .control-group label { font-weight: 700; font-size: 0.9rem; color: #333; }
 
@@ -53,19 +53,20 @@
     .color-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.15s ease; }
     .color-btn.active { border-color: #000; transform: scale(1.15); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
-    /* 입력 박스 및 하트 버튼 레이아웃 */
+    /* 입력 박스 및 라디오 레이아웃 */
     .input-wrapper { display: flex; gap: 8px; align-items: center; }
-    .input-text { flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; font-family: 'ManbokFont', sans-serif; }
+    .input-text { flex: 1; padding: 11px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; font-family: 'ManbokFont', sans-serif; }
+    .input-text.normal-font { font-family: 'Pretendard', sans-serif; }
     .input-text::placeholder { color: #aaa; font-size: 0.82rem; font-family: 'Pretendard', sans-serif; }
     .input-text:focus { border-color: #2196F3; }
     
     .btn-heart { padding: 10px 12px; background: #ffebee; color: #e91e63; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: 'Pretendard', sans-serif; }
     .btn-heart:hover { background: #ffcdd2; }
 
-    .radio-group { display: flex; gap: 16px; margin-top: 4px; }
+    .radio-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
     .radio-group label { font-weight: normal; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: 'Pretendard', sans-serif; }
 
-    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; font-family: 'Pretendard', sans-serif; }
+    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; font-family: 'Pretendard', sans-serif; margin-top: 4px; }
     .save-btn:hover { background: #1976D2; }
 
     input[type="file"] { display: none; }
@@ -99,9 +100,22 @@
 
     <!-- 설정 옵션 -->
     <div class="controls-section">
-      <!-- 1. 배경색 선택 -->
+
+      <!-- 1. 주문 정보 입력 (파일명 지정용) -->
       <div class="control-group">
-        <label>1. 키링 배경 컬러</label>
+        <label>1. 주문 정보 (파일명 저장용)</label>
+        <div class="radio-group" style="margin-bottom: 4px;">
+          <label><input type="radio" name="channel" value="쿠팡" checked> 쿠팡</label>
+          <label><input type="radio" name="channel" value="스마트스토어"> 스마트스토어</label>
+          <label><input type="radio" name="channel" value="카카오톡"> 카카오톡</label>
+          <label><input type="radio" name="channel" value="기타"> 기타</label>
+        </div>
+        <input type="text" id="ordererInput" class="input-text normal-font" placeholder="주문자 성함 (예: 홍길동)">
+      </div>
+
+      <!-- 2. 배경색 선택 -->
+      <div class="control-group">
+        <label>2. 키링 배경 컬러</label>
         <div class="color-options">
           <div class="color-btn active" style="background: var(--bg-pink);" title="핑크" onclick="setBgColor('#ffc3d9', this)"></div>
           <div class="color-btn" style="background: var(--bg-yellow);" title="노랑" onclick="setBgColor('#fdd449', this)"></div>
@@ -113,9 +127,9 @@
         </div>
       </div>
 
-      <!-- 2. 문구 입력 -->
+      <!-- 3. 문구 입력 -->
       <div class="control-group">
-        <label>2. 하단 문구 입력</label>
+        <label>3. 하단 문구 입력</label>
         <div class="input-wrapper">
           <input type="text" id="textInput" class="input-text" maxlength="12" placeholder="한글 6자, 영문 12자" oninput="drawCanvas()">
           <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
@@ -126,7 +140,7 @@
         </div>
       </div>
 
-      <!-- 3. 저장 버튼 -->
+      <!-- 4. 저장 버튼 -->
       <button class="save-btn" onclick="downloadDesign()">💾 완성 시안 저장하기</button>
     </div>
   </div>
@@ -493,11 +507,14 @@
     canvas.addEventListener('touchstart', handleStart, { passive: false });
     window.addEventListener('touchmove', handleMove, { passive: false });
 
-    // 인쇄용 4배 고화질(300 DPI 이상급) 시안 저장 기능
+    // 인쇄용 4배 고화질 시안 저장 기능 (채널명_주문자이름 자동 적용)
     function downloadDesign() {
       closeModal();
       
-      const highResScale = 4; // 4배 고해상도 뻥튀기 배율
+      const channel = document.querySelector('input[name="channel"]:checked').value;
+      const orderer = document.getElementById('ordererInput').value.trim() || '무명';
+
+      const highResScale = 4;
       const highResCanvas = document.createElement('canvas');
       highResCanvas.width = canvas.width * highResScale;   
       highResCanvas.height = canvas.height * highResScale; 
@@ -506,11 +523,10 @@
       highResCtx.imageSmoothingEnabled = true;
       highResCtx.imageSmoothingQuality = 'high';
 
-      // isForDownload = true 전달 (워터마크, 타공점, 재단선 제외하고 저장)
       renderEngine(highResCtx, true, highResScale);
 
       const link = document.createElement('a');
-      link.download = `네컷키링_시안_고화질_${Date.now()}.png`;
+      link.download = `${channel}_${orderer}_네컷키링_시안.png`;
       link.href = highResCanvas.toDataURL('image/png', 1.0);
       link.click();
 
