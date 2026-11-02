@@ -213,7 +213,10 @@
       drawCanvas();
     }
 
-    function getSlotIndexAtPoint(canvasY) {
+    function getSlotIndexAtPoint(canvasY, canvasX) {
+      // 터치 X 좌표도 프레임 폭(slotX ~ slotX + slotW) 범위 안인지 엄격히 판별
+      if (canvasX < slotX || canvasX > slotX + slotW) return -1;
+
       for (let i = 0; i < 4; i++) {
         const top = startY + i * (slotH + gapY);
         const bottom = top + slotH;
@@ -444,6 +447,8 @@
 
     function handleStart(e) {
       hasMoved = false;
+
+      // 핀치 투 줌 (두 손가락 조작)
       if (e.touches && e.touches.length === 2) {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
@@ -455,7 +460,8 @@
       }
 
       const pos = getCanvasCoordinates(e);
-      const slotIndex = getSlotIndexAtPoint(pos.y);
+      // 터치 좌표가 정확히 사진 프레임 안에 있을 때만 터치 감지
+      const slotIndex = getSlotIndexAtPoint(pos.y, pos.x);
 
       if (slotIndex !== -1) {
         activeSlotIndex = slotIndex;
@@ -466,17 +472,22 @@
           startX = pos.rawX;
           startYPos = pos.rawY;
         }
+      } else {
+        activeSlotIndex = -1;
+        isDragging = false;
       }
     }
 
     function handleMove(e) {
+      // 핀치 줌 확대/축소
       if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
         if (initialPinchDist) {
           const factor = dist / initialPinchDist;
-          slots[activeSlotIndex].scale = initialScale * factor;
+          // 축소 최소 0.5배, 확대 최대 5배 제한
+          slots[activeSlotIndex].scale = Math.min(Math.max(initialScale * factor, 0.5), 5.0);
           drawCanvas();
         }
         return;
@@ -495,8 +506,13 @@
         hasMoved = true;
       }
 
-      slots[activeSlotIndex].x += dx;
-      slots[activeSlotIndex].y += dy;
+      // 사진 이동 한계점(Clamp) 적용: 사진이 프레임 밖으로 튕겨 나가는 현상 방지
+      const currentSlot = slots[activeSlotIndex];
+      const maxOffsetX = (currentSlot.img.width * currentSlot.scale) / 2 + slotW;
+      const maxOffsetY = (currentSlot.img.height * currentSlot.scale) / 2 + slotH;
+
+      currentSlot.x = Math.min(Math.max(currentSlot.x + dx, -maxOffsetX), maxOffsetX);
+      currentSlot.y = Math.min(Math.max(currentSlot.y + dy, -maxOffsetY), maxOffsetY);
 
       startX = pos.rawX;
       startYPos = pos.rawY;
@@ -525,11 +541,11 @@
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const pos = getCanvasCoordinates(e);
-      const slotIndex = getSlotIndexAtPoint(pos.y);
+      const slotIndex = getSlotIndexAtPoint(pos.y, pos.x);
 
       if (slotIndex !== -1 && slots[slotIndex].img) {
         const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-        slots[slotIndex].scale *= zoomFactor;
+        slots[slotIndex].scale = Math.min(Math.max(slots[slotIndex].scale * zoomFactor, 0.5), 5.0);
         drawCanvas();
       }
     }, { passive: false });
@@ -541,6 +557,7 @@
 
     canvas.addEventListener('touchstart', handleStart, { passive: false });
     window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', () => { isDragging = false; initialPinchDist = null; });
 
     // PC/모바일 환경 자동 판별 완벽 다운로드 로직
     function downloadDesign() {
@@ -565,7 +582,6 @@
       const dataUrl = highResCanvas.toDataURL('image/png', 1.0);
 
       if (isMobile) {
-        // 모바일/카카오톡 앱인 경우: 저장 창에 이미지를 띄워 꾹 눌러 저장하도록 안내
         const imageWindow = window.open('', '_blank');
         if (imageWindow) {
           imageWindow.document.write(`
@@ -586,11 +602,9 @@
             </html>
           `);
         } else {
-          // 팝업 차단 등으로 안 열릴 경우 현재 페이지에서 직접 이동
           location.href = dataUrl;
         }
       } else {
-        // PC 브라우저인 경우: 자동 파일 다운로드
         const link = document.createElement('a');
         link.download = fileName;
         link.href = dataUrl;
