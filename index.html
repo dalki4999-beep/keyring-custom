@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>네컷 키링 커스텀 시안 제작기</title>
   <style>
     :root {
@@ -11,58 +11,62 @@
       --bg-white: #FFFFFF;
       --bg-black: #222222;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
-    body { background-color: #f4f5f7; color: #333; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-    h1 { font-size: 1.2rem; margin-bottom: 8px; text-align: center; }
-    p.desc { font-size: 0.85rem; color: #666; margin-bottom: 20px; text-align: center; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    body { background-color: #f4f5f7; color: #333; padding: 15px; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent; }
     
-    .main-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 900px; width: 100%; }
-    .preview-section { display: flex; flex-direction: column; align-items: center; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h1 { font-size: 1.3rem; margin-bottom: 6px; text-align: center; font-weight: 700; }
+    p.desc { font-size: 0.85rem; color: #666; margin-bottom: 16px; text-align: center; }
+
+    .main-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 800px; width: 100%; }
     
-    /* 2.5cm x 7cm 비율 (비율 유지: 125px x 350px) */
-    .canvas-container { position: relative; width: 150px; height: 420px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    /* 캔버스 프리뷰 영역 */
+    .preview-section { display: flex; flex-direction: column; align-items: center; background: #fff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 340px; }
+    .canvas-container { position: relative; width: 200px; height: 560px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
-    
-    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 16px; }
+
+    /* 컨트롤 영역 */
+    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 18px; }
     .control-group { display: flex; flex-direction: column; gap: 8px; }
-    .control-group label { font-weight: bold; font-size: 0.9rem; color: #444; }
-    
-    .color-options { display: flex; gap: 10px; }
-    .color-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; }
-    .color-btn.active { border-color: #000; transform: scale(1.1); }
-    
-    .photo-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .slot-btn { padding: 8px; border: 1px dashed #bbb; border-radius: 6px; background: #fafafa; cursor: pointer; text-align: center; font-size: 0.8rem; }
-    .slot-btn.active { border-color: #2196F3; background: #E3F2FD; font-weight: bold; }
-    
-    .input-text { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
-    
-    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .action-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; background: #eee; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
-    .action-btn:hover { background: #e0e0e0; }
-    .save-btn { background: #2196F3; color: white; font-weight: bold; padding: 12px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1rem; margin-top: 10px; }
+    .control-group label { font-weight: 700; font-size: 0.9rem; color: #333; }
+
+    /* 배경색 선택 버튼 */
+    .color-options { display: flex; gap: 12px; }
+    .color-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.15s ease; }
+    .color-btn.active { border-color: #000; transform: scale(1.15); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+    /* 입력 박스 */
+    .input-text { padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    .input-text:focus { border-color: #2196F3; }
+
+    .radio-group { display: flex; gap: 16px; margin-top: 4px; }
+    .radio-group label { font-weight: normal; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; }
     .save-btn:hover { background: #1976D2; }
-    
+
+    /* 숨김 파일 입력 */
     input[type="file"] { display: none; }
   </style>
 </head>
 <body>
 
   <h1>네컷 키링 시안 제작기</h1>
-  <p class="desc">사진을 각각 등록한 뒤, 위치와 크기를 조절해 보세요!</p>
+  <p class="desc">사진 칸을 터치해 사진을 넣고, 손으로 자유롭게 이동/확대해 보세요!</p>
 
   <div class="main-layout">
+    <!-- 시안 미리보기 -->
     <div class="preview-section">
       <div class="canvas-container">
         <canvas id="keyringCanvas" width="300" height="840"></canvas>
       </div>
-      <p style="font-size: 0.75rem; color: #888; margin-top: 8px;">* 빨간 점선은 재단 안전선입니다.</p>
+      <p style="font-size: 0.75rem; color: #888; margin-top: 10px;">💡 사진 칸 터치시 사진 변경 / 휠·두손가락으로 확대</p>
     </div>
 
+    <!-- 설정 옵션 -->
     <div class="controls-section">
-      <!-- 배경색 선택 -->
+      <!-- 1. 배경색 선택 -->
       <div class="control-group">
-        <label>1. 배경 컬러 선택</label>
+        <label>1. 키링 배경 컬러</label>
         <div class="color-options">
           <div class="color-btn active" style="background: var(--bg-pink);" onclick="setBgColor('#FFD1DC', this)"></div>
           <div class="color-btn" style="background: var(--bg-yellow);" onclick="setBgColor('#FFF3B0', this)"></div>
@@ -71,73 +75,44 @@
         </div>
       </div>
 
-      <!-- 사진 선택 슬롯 -->
+      <!-- 2. 문구 입력 -->
       <div class="control-group">
-        <label>2. 사진 업로드 (칸 선택)</label>
-        <div class="photo-slots">
-          <div class="slot-btn active" onclick="selectSlot(0)">1번째 칸 사진</div>
-          <div class="slot-btn" onclick="selectSlot(1)">2번째 칸 사진</div>
-          <div class="slot-btn" onclick="selectSlot(2)">3번째 칸 사진</div>
-          <div class="slot-btn" onclick="selectSlot(3)">4번째 칸 사진</div>
-        </div>
-        <input type="file" id="fileInput" accept="image/*" onchange="handleImageUpload(event)">
-        <button class="action-btn" style="margin-top: 4px;" onclick="document.getElementById('fileInput').click()">📷 사진 선택하기</button>
-      </div>
-
-      <!-- 사진 조작 -->
-      <div class="control-group">
-        <label>3. 선택한 사진 조절</label>
-        <div class="btn-group">
-          <button class="action-btn" onclick="adjustPhoto('zoom', 1.05)">🔍 확대</button>
-          <button class="action-btn" onclick="adjustPhoto('zoom', 0.95)">🔍 축소</button>
-          <button class="action-btn" onclick="adjustPhoto('rotate', 90)">🔄 회전</button>
-        </div>
-        <p style="font-size: 0.75rem; color: #666; margin-top: 4px;">* 화면 속 사진을 직접 마우스나 손가락으로 끌어서 위치를 이동할 수도 있습니다.</p>
-      </div>
-
-      <!-- 문구 입력 -->
-      <div class="control-group">
-        <label>4. 하단 문구 (최대 6자)</label>
+        <label>2. 하단 문구 입력 (최대 6자)</label>
         <input type="text" id="textInput" class="input-text" maxlength="6" placeholder="Blessing♥" oninput="drawCanvas()">
-        <div style="display: flex; gap: 10px; margin-top: 4px;">
-          <label style="font-weight: normal; font-size: 0.85rem;"><input type="radio" name="textColor" value="#000000" checked onchange="drawCanvas()"> 검정 글자</label>
-          <label style="font-weight: normal; font-size: 0.85rem;"><input type="radio" name="textColor" value="#FFFFFF" onchange="drawCanvas()"> 흰색 글자</label>
+        <div class="radio-group">
+          <label><input type="radio" name="textColor" value="#000000" checked onchange="drawCanvas()"> 검정 글자</label>
+          <label><input type="radio" name="textColor" value="#FFFFFF" onchange="drawCanvas()"> 흰색 글자</label>
         </div>
       </div>
 
+      <!-- 3. 저장 버튼 -->
       <button class="save-btn" onclick="downloadDesign()">💾 완성 시안 저장하기</button>
     </div>
   </div>
 
+  <input type="file" id="fileInput" accept="image/*" onchange="handleImageUpload(event)">
+
   <script>
     const canvas = document.getElementById('keyringCanvas');
     const ctx = canvas.getContext('2d');
-    
-    let bgColor = '#FFD1DC';
-    let currentSlot = 0;
-    
-    // 4개 사진 슬롯 데이터 (비율: 2.1cm x 1.3cm 기준)
-    const slots = [
-      { img: null, x: 0, y: 0, scale: 1, rotation: 0 },
-      { img: null, x: 0, y: 0, scale: 1, rotation: 0 },
-      { img: null, x: 0, y: 0, scale: 1, rotation: 0 },
-      { img: null, x: 0, y: 0, scale: 1, rotation: 0 }
-    ];
+    const fileInput = document.getElementById('fileInput');
 
-    // 캔버스 크기: 300 x 840 (비율 2.5 : 7)
-    // 각 칸 크기: 252 x 156 (비율 2.1 : 1.3)
+    let bgColor = '#FFD1DC';
+    let selectedSlotIndex = -1;
+
+    // 키링 캔버스 규격 (300 x 840)
     const slotW = 252;
     const slotH = 156;
     const slotX = (300 - slotW) / 2; // 24
     const startY = 30;
     const gapY = 18;
 
-    function selectSlot(index) {
-      currentSlot = index;
-      document.querySelectorAll('.slot-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-      });
-    }
+    const slots = [
+      { img: null, x: 0, y: 0, scale: 1 },
+      { img: null, x: 0, y: 0, scale: 1 },
+      { img: null, x: 0, y: 0, scale: 1 },
+      { img: null, x: 0, y: 0, scale: 1 }
+    ];
 
     function setBgColor(color, el) {
       bgColor = color;
@@ -146,36 +121,34 @@
       drawCanvas();
     }
 
+    function getSlotIndexAtPoint(canvasY) {
+      for (let i = 0; i < 4; i++) {
+        const top = startY + i * (slotH + gapY);
+        const bottom = top + slotH;
+        if (canvasY >= top && canvasY <= bottom) return i;
+      }
+      return -1;
+    }
+
     function handleImageUpload(e) {
       const file = e.target.files[0];
-      if (!file) return;
+      if (!file || selectedSlotIndex === -1) return;
 
       const reader = new FileReader();
       reader.onload = function(evt) {
         const img = new Image();
         img.onload = function() {
-          slots[currentSlot].img = img;
-          slots[currentSlot].x = 0;
-          slots[currentSlot].y = 0;
-          slots[currentSlot].scale = Math.max(slotW / img.width, slotH / img.height);
-          slots[currentSlot].rotation = 0;
+          const slot = slots[selectedSlotIndex];
+          slot.img = img;
+          slot.x = 0;
+          slot.y = 0;
+          slot.scale = Math.max(slotW / img.width, slotH / img.height);
           drawCanvas();
         };
         img.src = evt.target.result;
       };
       reader.readAsDataURL(file);
-    }
-
-    function adjustPhoto(type, value) {
-      const slot = slots[currentSlot];
-      if (!slot.img) return;
-
-      if (type === 'zoom') {
-        slot.scale *= value;
-      } else if (type === 'rotate') {
-        slot.rotation = (slot.rotation + value) % 360;
-      }
-      drawCanvas();
+      fileInput.value = '';
     }
 
     function drawCanvas(isForDownload = false) {
@@ -183,13 +156,12 @@
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. 사진 4개 그리기
+      // 2. 사진 4개 렌더링
       for (let i = 0; i < 4; i++) {
         const slot = slots[i];
         const currentSlotY = startY + i * (slotH + gapY);
 
         ctx.save();
-        // 각 칸의 클리핑 마스크 영역 설정
         ctx.beginPath();
         ctx.rect(slotX, currentSlotY, slotW, slotH);
         ctx.clip();
@@ -199,90 +171,173 @@
           const centerY = currentSlotY + slotH / 2;
 
           ctx.translate(centerX + slot.x, centerY + slot.y);
-          ctx.rotate((slot.rotation * Math.PI) / 180);
           ctx.scale(slot.scale, slot.scale);
           ctx.drawImage(slot.img, -slot.img.width / 2, -slot.img.height / 2);
         } else {
-          // 사진 없을 때 가이드 배경
+          // 사진이 없을 때 터치 안내 배경
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(slotX, currentSlotY, slotW, slotH);
-          ctx.fillStyle = '#aaa';
-          ctx.font = '24px Pretendard';
+          ctx.fillStyle = '#999999';
+          ctx.font = 'bold 20px Pretendard, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(`${i + 1}번 사진`, slotX + slotW / 2, currentSlotY + slotH / 2 + 8);
+          ctx.fillText(`📷 ${i + 1}번 사진 넣기 (터치)`, slotX + slotW / 2, currentSlotY + slotH / 2 + 7);
         }
         ctx.restore();
 
-        // 테두리 가이드라인 (저장 시 제거)
         if (!isForDownload) {
-          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
           ctx.lineWidth = 1;
           ctx.strokeRect(slotX, currentSlotY, slotW, slotH);
         }
       }
 
-      // 3. 하단 문구 그리기
-      const text = document.getElementById('textInput').value;
+      // 3. 하단 문구 렌더링
+      const text = document.getElementById('textInput').value.trim();
       if (text) {
         const textColor = document.querySelector('input[name="textColor"]:checked').value;
         ctx.fillStyle = textColor;
-        ctx.font = 'bold 32px Pretendard, sans-serif';
+        ctx.font = 'bold 36px Pretendard, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(text, canvas.width / 2, 770);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, canvas.width / 2, 765);
       }
 
-      // 4. 재단 가이드선 (다운로드 시에는 숨김)
+      // 4. 재단선 가이드 (다운로드 시 제거)
       if (!isForDownload) {
         ctx.strokeStyle = '#ff0000';
-        ctx.setLineDash([4, 4]);
-        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 6]);
+        ctx.lineWidth = 2;
         ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
         ctx.setLineDash([]);
       }
     }
 
-    // 마우스/터치 드래그로 사진 이동
+    // 마우스 / 터치 조작 관련 글로벌 상태
     let isDragging = false;
-    let startX, startYMouse;
+    let startX = 0, startYPos = 0;
+    let activeSlotIndex = -1;
+    let initialPinchDist = null;
+    let initialScale = 1;
 
-    canvas.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      startX = e.clientX;
-      startYMouse = e.clientY;
-    });
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
 
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging || !slots[currentSlot].img) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startYMouse;
-      
-      // 캔버스 크기 대비 이동 비율 조정
-      const scaleFactor = canvas.width / canvas.clientWidth;
-      slots[currentSlot].x += dx * scaleFactor;
-      slots[currentSlot].y += dy * scaleFactor;
-      
-      startX = e.clientX;
-      startYMouse = e.clientY;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+        rawX: clientX,
+        rawY: clientY
+      };
+    }
+
+    // 클릭 / 터치 시작
+    function handleStart(e) {
+      if (e.touches && e.touches.length === 2) {
+        // 멀티터치 (핀치 투 줌 시작)
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        initialPinchDist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+        if (activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
+          initialScale = slots[activeSlotIndex].scale;
+        }
+        return;
+      }
+
+      const pos = getCanvasCoordinates(e);
+      const slotIndex = getSlotIndexAtPoint(pos.y);
+
+      if (slotIndex !== -1) {
+        activeSlotIndex = slotIndex;
+        if (!slots[slotIndex].img) {
+          // 사진 없으면 즉시 파일 업로드창 오픈
+          selectedSlotIndex = slotIndex;
+          fileInput.click();
+        } else {
+          // 사진 드래그 이동 시작
+          isDragging = true;
+          startX = pos.rawX;
+          startYPos = pos.rawY;
+        }
+      }
+    }
+
+    // 이동 / 핀치 줌 처리
+    function handleMove(e) {
+      if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
+        // 두 손가락 확대/축소
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+        if (initialPinchDist) {
+          const factor = dist / initialPinchDist;
+          slots[activeSlotIndex].scale = initialScale * factor;
+          drawCanvas();
+        }
+        return;
+      }
+
+      if (!isDragging || activeSlotIndex === -1 || !slots[activeSlotIndex].img) return;
+      e.preventDefault();
+
+      const pos = getCanvasCoordinates(e);
+      const rect = canvas.getBoundingClientRect();
+      const scaleFactor = canvas.width / rect.width;
+
+      const dx = (pos.rawX - startX) * scaleFactor;
+      const dy = (pos.rawY - startYPos) * scaleFactor;
+
+      slots[activeSlotIndex].x += dx;
+      slots[activeSlotIndex].y += dy;
+
+      startX = pos.rawX;
+      startYPos = pos.rawY;
+
       drawCanvas();
-    });
+    }
 
-    window.addEventListener('mouseup', () => isDragging = false);
+    function handleEnd() {
+      isDragging = false;
+      initialPinchDist = null;
+    }
 
-    // 고해상도 시안 다운로드 기능 (300 DPI 대응)
+    // 마우스 휠 확대/축소
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const pos = getCanvasCoordinates(e);
+      const slotIndex = getSlotIndexAtPoint(pos.y);
+
+      if (slotIndex !== -1 && slots[slotIndex].img) {
+        const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+        slots[slotIndex].scale *= zoomFactor;
+        drawCanvas();
+      }
+    }, { passive: false });
+
+    // 이벤드 리스너 등록
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    canvas.addEventListener('touchstart', handleStart, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+
+    // 고해상도 시안 저장
     function downloadDesign() {
-      // 가이드선 숨긴 상태로 다시 그리기
       drawCanvas(true);
-
       const link = document.createElement('a');
       link.download = `네컷키링_시안_${Date.now()}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
-
-      // 화면용 재단선 복원
       drawCanvas(false);
     }
 
-    // 초기 화면 그리기
+    // 초기 실행
     drawCanvas();
   </script>
 </body>
