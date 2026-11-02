@@ -139,7 +139,7 @@
         </div>
       </div>
 
-      <!-- 3. 문구 입력 (모바일 밀림 방지 모듈) -->
+      <!-- 3. 문구 입력 -->
       <div class="control-group">
         <label>3. 하단 문구 입력</label>
         <div class="input-wrapper">
@@ -542,12 +542,13 @@
     canvas.addEventListener('touchstart', handleStart, { passive: false });
     window.addEventListener('touchmove', handleMove, { passive: false });
 
-    // 인쇄용 4배 고화질 시안 저장 기능
+    // 모바일 브라우저 파일명 보장 (Blob 객체 생성 다운로드 방식)
     function downloadDesign() {
       closeModal();
       
       const channel = document.querySelector('input[name="channel"]:checked').value;
       const orderer = document.getElementById('ordererInput').value.trim() || '무명';
+      const fileName = `${channel}_${orderer}_네컷키링_시안.png`;
 
       const highResScale = 4;
       const highResCanvas = document.createElement('canvas');
@@ -560,10 +561,18 @@
 
       renderEngine(highResCtx, true, highResScale);
 
-      const link = document.createElement('a');
-      link.download = `${channel}_${orderer}_네컷키링_시안.png`;
-      link.href = highResCanvas.toDataURL('image/png', 1.0);
-      link.click();
+      // 모바일 파일명 유지 Blob 호환 로직
+      highResCanvas.toBlob(function(blob) {
+        if (!blob) return;
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = blobUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      }, 'image/png', 1.0);
 
       drawCanvas();
     }
