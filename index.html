@@ -110,7 +110,7 @@
         <label>2. 하단 문구 입력</label>
         <div class="input-wrapper">
           <input type="text" id="textInput" class="input-text" maxlength="12" placeholder="한글 6자, 영문 12자" oninput="drawCanvas()">
-          <!-- 클릭 시 하트 기호 입력되는 버튼 -->
+          <!-- 클릭 시 빨간 하트 기호 입력 -->
           <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
         </div>
         <div class="radio-group">
@@ -175,7 +175,6 @@
       return -1;
     }
 
-    // 하트 버튼 클릭 시 입력창 커서 위치에 하트 입력
     function insertHeart(symbol) {
       const start = textInput.selectionStart;
       const end = textInput.selectionEnd;
@@ -268,14 +267,34 @@
       const lastSlotY = startY + 3 * (slotH + gapY) + slotH;
       const textAreaY = lastSlotY + (2.5 * M2P); 
 
-      const text = textInput.value.trim();
+      const text = textInput.value;
       if (text) {
-        const textColor = document.querySelector('input[name="textColor"]:checked').value;
-        ctx.fillStyle = textColor;
-        ctx.font = 'bold 30px Pretendard, sans-serif';
-        ctx.textAlign = 'center';
+        const defaultColor = document.querySelector('input[name="textColor"]:checked').value;
+        const fontStyle = 'bold 30px Pretendard, sans-serif';
+        ctx.font = fontStyle;
         ctx.textBaseline = 'middle';
-        ctx.fillText(text, canvas.width / 2, textAreaY);
+
+        // 전체 텍스트 수평 중앙 정렬을 위한 총 폭 계산
+        let totalWidth = 0;
+        for (let char of text) {
+          totalWidth += ctx.measureText(char).width;
+        }
+
+        let startXText = (canvas.width - totalWidth) / 2;
+
+        // 글자별 개별 렌더링 (하트 기호만 빨간색 고정)
+        for (let char of text) {
+          const charWidth = ctx.measureText(char).width;
+          
+          if (char === '♥' || char === '♡' || char === '💕' || char === '💗') {
+            ctx.fillStyle = '#FF2D55'; // 빨간색 채워진 하트 컬러
+          } else {
+            ctx.fillStyle = defaultColor;
+          }
+
+          ctx.fillText(char, startXText, textAreaY);
+          startXText += charWidth;
+        }
       }
 
       if (!isForDownload) {
