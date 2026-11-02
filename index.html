@@ -45,9 +45,14 @@
     .color-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.15s ease; }
     .color-btn.active { border-color: #000; transform: scale(1.15); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
-    /* 입력 박스 */
-    .input-text { padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    /* 입력 박스 및 하트 버튼 레이아웃 */
+    .input-wrapper { display: flex; gap: 8px; align-items: center; }
+    .input-text { flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
+    .input-text::placeholder { color: #aaa; font-size: 0.82rem; }
     .input-text:focus { border-color: #2196F3; }
+    
+    .btn-heart { padding: 10px 12px; background: #ffebee; color: #e91e63; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+    .btn-heart:hover { background: #ffcdd2; }
 
     .radio-group { display: flex; gap: 16px; margin-top: 4px; }
     .radio-group label { font-weight: normal; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
@@ -92,4 +97,152 @@
         <div class="color-options">
           <div class="color-btn active" style="background: var(--bg-pink);" title="핑크" onclick="setBgColor('#ffc3d9', this)"></div>
           <div class="color-btn" style="background: var(--bg-yellow);" title="노랑" onclick="setBgColor('#fdd449', this)"></div>
-          <div class="color-
+          <div class="color-btn" style="background: var(--bg-mint);" title="민트" onclick="setBgColor('#87efea', this)"></div>
+          <div class="color-btn" style="background: var(--bg-purple);" title="연보라" onclick="setBgColor('#f3c4ff', this)"></div>
+          <div class="color-btn" style="background: var(--bg-blue);" title="파랑" onclick="setBgColor('#6c9cff', this)"></div>
+          <div class="color-btn" style="background: var(--bg-white);" title="흰색" onclick="setBgColor('#FFFFFF', this)"></div>
+          <div class="color-btn" style="background: var(--bg-black);" title="검정" onclick="setBgColor('#222222', this)"></div>
+        </div>
+      </div>
+
+      <!-- 2. 문구 입력 -->
+      <div class="control-group">
+        <label>2. 하단 문구 입력</label>
+        <div class="input-wrapper">
+          <input type="text" id="textInput" class="input-text" maxlength="12" placeholder="한글 6자, 영문 12자" oninput="drawCanvas()">
+          <!-- 클릭 시 하트 기호 입력되는 버튼 -->
+          <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
+        </div>
+        <div class="radio-group">
+          <label><input type="radio" name="textColor" value="#000000" checked onchange="drawCanvas()"> 검정 글자</label>
+          <label><input type="radio" name="textColor" value="#FFFFFF" onchange="drawCanvas()"> 흰색 글자</label>
+        </div>
+      </div>
+
+      <!-- 3. 저장 버튼 -->
+      <button class="save-btn" onclick="downloadDesign()">💾 완성 시안 저장하기</button>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/*">
+
+  <script>
+    const canvas = document.getElementById('keyringCanvas');
+    const ctx = canvas.getContext('2d');
+    const fileInput = document.getElementById('fileInput');
+    const textInput = document.getElementById('textInput');
+    const actionModal = document.getElementById('actionModal');
+    const modalTitle = document.getElementById('modalTitle');
+
+    let bgColor = '#ffc3d9';
+    let selectedSlotIndex = -1;
+
+    const M2P = 11.8077;
+    const printW = 26 * M2P; 
+    const printH = 71 * M2P; 
+
+    const slotW = 21.76 * M2P; 
+    const slotH = 13.63 * M2P; 
+    const gapY = 1.3 * M2P;    
+    const slotX = (printW - slotW) / 2;
+
+    const holeX = printW / 2;
+    const holeY = (0.5 + 2.5) * M2P; 
+    const holeDotRadius = 0.25 * M2P; 
+
+    const startY = holeY + (1.5 * M2P) + (3.0 * M2P); 
+
+    const slots = [
+      { img: null, x: 0, y: 0, scale: 1 },
+      { img: null, x: 0, y: 0, scale: 1 },
+      { img: null, x: 0, y: 0, scale: 1 },
+      { img: null, x: 0, y: 0, scale: 1 }
+    ];
+
+    function setBgColor(color, el) {
+      bgColor = color;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      drawCanvas();
+    }
+
+    function getSlotIndexAtPoint(canvasY) {
+      for (let i = 0; i < 4; i++) {
+        const top = startY + i * (slotH + gapY);
+        const bottom = top + slotH;
+        if (canvasY >= top && canvasY <= bottom) return i;
+      }
+      return -1;
+    }
+
+    // 하트 버튼 클릭 시 입력창 커서 위치에 하트 입력
+    function insertHeart(symbol) {
+      const start = textInput.selectionStart;
+      const end = textInput.selectionEnd;
+      const text = textInput.value;
+      
+      textInput.value = text.substring(0, start) + symbol + text.substring(end);
+      textInput.selectionStart = textInput.selectionEnd = start + symbol.length;
+      textInput.focus();
+      drawCanvas();
+    }
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file || selectedSlotIndex === -1) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const slot = slots[selectedSlotIndex];
+          slot.img = img;
+          slot.x = 0;
+          slot.y = 0;
+          slot.scale = Math.max(slotW / img.width, slotH / img.height);
+          closeModal();
+          drawCanvas();
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+      fileInput.value = '';
+    });
+
+    function triggerFileChange() {
+      fileInput.click();
+    }
+
+    function deleteSelectedPhoto() {
+      if (selectedSlotIndex !== -1) {
+        slots[selectedSlotIndex].img = null;
+        slots[selectedSlotIndex].x = 0;
+        slots[selectedSlotIndex].y = 0;
+        slots[selectedSlotIndex].scale = 1;
+        closeModal();
+        drawCanvas();
+      }
+    }
+
+    function closeModal() {
+      actionModal.style.display = 'none';
+    }
+
+    function drawCanvas(isForDownload = false) {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < 4; i++) {
+        const slot = slots[i];
+        const currentSlotY = startY + i * (slotH + gapY);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(slotX, currentSlotY, slotW, slotH);
+        ctx.clip();
+
+        if (slot.img) {
+          const centerX = slotX + slotW / 2;
+          const centerY = currentSlotY + slotH / 2;
+
+          ctx
