@@ -281,8 +281,10 @@
       targetCtx.fillStyle = bgColor;
       targetCtx.fillRect(0, 0, sPrintW, sPrintH);
 
-      // 2. 워터마크
-      drawLogoWatermark(targetCtx, scaleFactor);
+      // 2. 워터마크 (다운로드가 아닐 때 = 화면 미리보기일 때만 그리기)
+      if (!isForDownload) {
+        drawLogoWatermark(targetCtx, scaleFactor);
+      }
 
       // 3. 사진 4칸
       for (let i = 0; i < 4; i++) {
@@ -497,14 +499,14 @@
       
       const highResScale = 4; // 4배 고해상도 뻥튀기 배율
       const highResCanvas = document.createElement('canvas');
-      highResCanvas.width = canvas.width * highResScale;   // 가로 약 1228px
-      highResCanvas.height = canvas.height * highResScale; // 세로 약 3352px
+      highResCanvas.width = canvas.width * highResScale;   
+      highResCanvas.height = canvas.height * highResScale; 
       
       const highResCtx = highResCanvas.getContext('2d');
       highResCtx.imageSmoothingEnabled = true;
       highResCtx.imageSmoothingQuality = 'high';
 
-      // 메모리 속 4배 캔버스에 선명하게 출력
+      // isForDownload = true 전달 (워터마크, 타공점, 재단선 제외하고 저장)
       renderEngine(highResCtx, true, highResScale);
 
       const link = document.createElement('a');
