@@ -245,4 +245,181 @@
           const centerX = slotX + slotW / 2;
           const centerY = currentSlotY + slotH / 2;
 
-          ctx
+          ctx.translate(centerX + slot.x, centerY + slot.y);
+          ctx.scale(slot.scale, slot.scale);
+          ctx.drawImage(slot.img, -slot.img.width / 2, -slot.img.height / 2);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(slotX, currentSlotY, slotW, slotH);
+          ctx.fillStyle = '#999999';
+          ctx.font = 'bold 20px Pretendard, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`📷 ${i + 1}번 사진 넣기`, slotX + slotW / 2, currentSlotY + slotH / 2 + 7);
+        }
+        ctx.restore();
+
+        if (!isForDownload) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(slotX, currentSlotY, slotW, slotH);
+        }
+      }
+
+      const lastSlotY = startY + 3 * (slotH + gapY) + slotH;
+      const textAreaY = lastSlotY + (2.5 * M2P); 
+
+      const text = textInput.value.trim();
+      if (text) {
+        const textColor = document.querySelector('input[name="textColor"]:checked').value;
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 30px Pretendard, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, canvas.width / 2, textAreaY);
+      }
+
+      if (!isForDownload) {
+        const trimMargin = 0.5 * M2P;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)'; 
+        ctx.lineWidth = 1;
+        ctx.strokeRect(trimMargin, trimMargin, canvas.width - (trimMargin * 2), canvas.height - (trimMargin * 2));
+
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(holeX, holeY, holeDotRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    let isDragging = false;
+    let startX = 0, startYPos = 0;
+    let activeSlotIndex = -1;
+    let initialPinchDist = null;
+    let initialScale = 1;
+    let hasMoved = false;
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+        rawX: clientX,
+        rawY: clientY
+      };
+    }
+
+    function handleStart(e) {
+      hasMoved = false;
+      if (e.touches && e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        initialPinchDist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+        if (activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
+          initialScale = slots[activeSlotIndex].scale;
+        }
+        return;
+      }
+
+      const pos = getCanvasCoordinates(e);
+      const slotIndex = getSlotIndexAtPoint(pos.y);
+
+      if (slotIndex !== -1) {
+        activeSlotIndex = slotIndex;
+        selectedSlotIndex = slotIndex;
+
+        if (slots[slotIndex].img) {
+          isDragging = true;
+          startX = pos.rawX;
+          startYPos = pos.rawY;
+        }
+      }
+    }
+
+    function handleMove(e) {
+      if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+        if (initialPinchDist) {
+          const factor = dist / initialPinchDist;
+          slots[activeSlotIndex].scale = initialScale * factor;
+          drawCanvas();
+        }
+        return;
+      }
+
+      if (!isDragging || activeSlotIndex === -1 || !slots[activeSlotIndex].img) return;
+      
+      const pos = getCanvasCoordinates(e);
+      const rect = canvas.getBoundingClientRect();
+      const scaleFactor = canvas.width / rect.width;
+
+      const dx = (pos.rawX - startX) * scaleFactor;
+      const dy = (pos.rawY - startYPos) * scaleFactor;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasMoved = true;
+      }
+
+      slots[activeSlotIndex].x += dx;
+      slots[activeSlotIndex].y += dy;
+
+      startX = pos.rawX;
+      startYPos = pos.rawY;
+
+      drawCanvas();
+    }
+
+    function handleEnd(e) {
+      if (!hasMoved && activeSlotIndex !== -1) {
+        if (!slots[activeSlotIndex].img) {
+          setTimeout(() => { fileInput.click(); }, 10);
+        } else {
+          modalTitle.innerText = `${activeSlotIndex + 1}번 사진 관리`;
+          actionModal.style.display = 'flex';
+        }
+      }
+      isDragging = false;
+      initialPinchDist = null;
+    }
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const pos = getCanvasCoordinates(e);
+      const slotIndex = getSlotIndexAtPoint(pos.y);
+
+      if (slotIndex !== -1 && slots[slotIndex].img) {
+        const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+        slots[slotIndex].scale *= zoomFactor;
+        drawCanvas();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('click', handleEnd);
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('touchstart', handleStart, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+
+    function downloadDesign() {
+      closeModal();
+      drawCanvas(true);
+      const link = document.createElement('a');
+      link.download = `네컷키링_시안_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+      drawCanvas(false);
+    }
+
+    drawCanvas();
+  </script>
+</body>
+</html>
