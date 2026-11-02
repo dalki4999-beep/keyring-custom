@@ -23,55 +23,55 @@
       --bg-black: #222222;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'ManbokFont', 'Pretendard', -apple-system, sans-serif; }
-    body { background-color: #f4f5f7; color: #333; padding: 15px; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #f4f5f7; color: #333; padding: 12px; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent; }
     
-    h1 { font-size: 1.3rem; margin-bottom: 6px; text-align: center; font-weight: 700; font-family: 'Pretendard', sans-serif; }
-    p.desc { font-size: 0.85rem; color: #666; margin-bottom: 16px; text-align: center; font-family: 'Pretendard', sans-serif; }
+    h1 { font-size: 1.25rem; margin-bottom: 6px; text-align: center; font-weight: 700; font-family: 'Pretendard', sans-serif; }
+    p.desc { font-size: 0.82rem; color: #666; margin-bottom: 14px; text-align: center; font-family: 'Pretendard', sans-serif; }
 
-    .main-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 800px; width: 100%; }
+    .main-layout { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; max-width: 800px; width: 100%; }
     
     /* 캔버스 프리뷰 영역 */
     .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 340px; }
     .canvas-container { position: relative; width: 208px; height: 568px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
 
-    /* 모달 팝업 스타일 */
-    .action-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.98); backdrop-filter: blur(4px); padding: 18px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; flex-direction: column; gap: 12px; width: 88%; max-width: 240px; text-align: center; font-family: 'Pretendard', sans-serif; }
-    .action-modal p { font-size: 0.9rem; font-weight: bold; color: #333; }
+    /* 하단 바텀시트 팝업 모달 */
+    .action-modal { display: none; position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.98); backdrop-filter: blur(6px); padding: 14px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 10; flex-direction: column; gap: 10px; width: 92%; max-width: 270px; text-align: center; font-family: 'Pretendard', sans-serif; border: 1px solid rgba(0,0,0,0.08); }
+    .action-modal p { font-size: 0.85rem; font-weight: bold; color: #333; }
     
-    .brightness-control-group { display: flex; flex-direction: column; gap: 6px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
-    .brightness-control-group label { font-size: 0.8rem; font-weight: bold; color: #555; display: flex; justify-content: space-between; }
-    .brightness-control-group input[type="range"] { width: 100%; cursor: pointer; }
+    .brightness-control-group { display: flex; flex-direction: column; gap: 4px; background: #f8f9fa; padding: 8px 10px; border-radius: 8px; border: 1px solid #eee; }
+    .brightness-control-group label { font-size: 0.78rem; font-weight: bold; color: #555; display: flex; justify-content: space-between; }
+    .brightness-control-group input[type="range"] { width: 100%; cursor: pointer; margin-top: 2px; }
 
-    .modal-btn { padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; font-family: 'Pretendard', sans-serif; }
+    .modal-btn { padding: 8px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.82rem; cursor: pointer; transition: background 0.2s; font-family: 'Pretendard', sans-serif; }
     .btn-change { background: #2196F3; color: white; }
     .btn-delete { background: #FF5252; color: white; }
-    .btn-cancel { background: #eee; color: #666; }
+    .btn-cancel { background: #eee; color: #666; margin-top: 2px; }
 
-    /* 컨트롤 영역 */
-    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 16px; font-family: 'Pretendard', sans-serif; }
-    .control-group { display: flex; flex-direction: column; gap: 8px; }
+    /* 컨트롤 영역 모바일 피팅 조절 */
+    .controls-section { flex: 1; min-width: 280px; max-width: 340px; width: 100%; background: #fff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 16px; font-family: 'Pretendard', sans-serif; }
+    .control-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
     .control-group label { font-weight: 700; font-size: 0.9rem; color: #333; }
 
     /* 배경색 선택 버튼 */
     .color-options { display: flex; gap: 8px; flex-wrap: wrap; }
-    .color-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.15s ease; }
-    .color-btn.active { border-color: #000; transform: scale(1.15); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .color-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.15s ease; }
+    .color-btn.active { border-color: #000; transform: scale(1.12); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
-    /* 입력 박스 및 라디오 레이아웃 */
-    .input-wrapper { display: flex; gap: 8px; align-items: center; }
-    .input-text { flex: 1; padding: 11px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; font-family: 'ManbokFont', sans-serif; }
+    /* 모바일 잘림 방지 입력 박스 레이아웃 */
+    .input-wrapper { display: flex; gap: 6px; align-items: center; width: 100%; }
+    .input-text { flex: 1; min-width: 0; padding: 10px 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; font-family: 'ManbokFont', sans-serif; }
     .input-text.normal-font { font-family: 'Pretendard', sans-serif; }
-    .input-text::placeholder { color: #aaa; font-size: 0.82rem; font-family: 'Pretendard', sans-serif; }
+    .input-text::placeholder { color: #aaa; font-size: 0.8rem; font-family: 'Pretendard', sans-serif; }
     .input-text:focus { border-color: #2196F3; }
     
-    .btn-heart { padding: 10px 12px; background: #ffebee; color: #e91e63; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: 'Pretendard', sans-serif; }
+    .btn-heart { padding: 10px 10px; background: #ffebee; color: #e91e63; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: bold; font-size: 0.82rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; font-family: 'Pretendard', sans-serif; }
     .btn-heart:hover { background: #ffcdd2; }
 
-    .radio-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
-    .radio-group label { font-weight: normal; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: 'Pretendard', sans-serif; }
+    .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+    .radio-group label { font-weight: normal; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 3px; font-family: 'Pretendard', sans-serif; }
 
-    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; font-family: 'Pretendard', sans-serif; margin-top: 4px; }
+    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; font-family: 'Pretendard', sans-serif; margin-top: 2px; }
     .save-btn:hover { background: #1976D2; }
 
     input[type="file"] { display: none; }
@@ -80,7 +80,7 @@
 <body>
 
   <h1>네컷 키링 시안 제작기</h1>
-  <p class="desc">사진 칸을 터치해 사진을 넣고, 사진별로 이동/확대 및 밝기를 조절해 보세요!</p>
+  <p class="desc">사진 칸을 터치해 사진을 넣고, 손으로 자유롭게 이동/확대해 보세요!</p>
 
   <div class="main-layout">
     <!-- 시안 미리보기 -->
@@ -89,11 +89,11 @@
         <canvas id="keyringCanvas" width="307" height="838"></canvas>
       </div>
 
-      <!-- 사진 개별 관리 팝업 모달 -->
+      <!-- 사진 관리 하단 바텀시트 모달 -->
       <div id="actionModal" class="action-modal">
         <p id="modalTitle">1번 사진 관리</p>
         
-        <!-- 사진별 개별 밝기 조절 슬라이더 -->
+        <!-- 밝기 조절 슬라이더 -->
         <div class="brightness-control-group">
           <label>☀️ 사진 밝기 조절 <span id="brightnessValText">100%</span></label>
           <input type="range" id="modalBrightnessInput" min="70" max="150" value="100" oninput="onBrightnessChange(this.value)">
@@ -113,7 +113,7 @@
     <!-- 설정 옵션 -->
     <div class="controls-section">
 
-      <!-- 1. 주문 정보 입력 (파일명 지정용) -->
+      <!-- 1. 주문 정보 입력 -->
       <div class="control-group">
         <label>1. 주문 정보 (파일명 저장용)</label>
         <div class="radio-group" style="margin-bottom: 4px;">
@@ -139,7 +139,7 @@
         </div>
       </div>
 
-      <!-- 3. 문구 입력 -->
+      <!-- 3. 문구 입력 (모바일 밀림 방지 모듈) -->
       <div class="control-group">
         <label>3. 하단 문구 입력</label>
         <div class="input-wrapper">
@@ -199,7 +199,6 @@
 
     const startY = 6.0 * M2P;  
 
-    // 사진 4칸 데이터 (각 사진별 brightness 개별 저장)
     const slots = [
       { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
       { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
@@ -247,9 +246,8 @@
           slot.x = 0;
           slot.y = 0;
           slot.scale = Math.max(slotW / img.width, slotH / img.height);
-          slot.brightness = 100; // 사진 변경 시 밝기 100%로 리셋
+          slot.brightness = 100;
           
-          // 모달 오픈 중이면 밝기 슬라이더 값 동기화
           modalBrightnessInput.value = 100;
           brightnessValText.innerText = '100%';
           
@@ -276,7 +274,6 @@
       }
     }
 
-    // 모달창에서 밝기 슬라이더 조절 시 선택된 사진만 실시간 밝기 변경
     function onBrightnessChange(val) {
       if (selectedSlotIndex !== -1) {
         slots[selectedSlotIndex].brightness = val;
@@ -287,7 +284,7 @@
 
     function closeModal() { actionModal.style.display = 'none'; }
 
-    // 워터마크 렌더링 (배율 지원)
+    // 워터마크 렌더링
     function drawLogoWatermark(targetCtx, scale = 1) {
       if (!logoImg.complete || logoImg.naturalWidth === 0) return;
 
@@ -308,7 +305,7 @@
       targetCtx.restore();
     }
 
-    // 통합 렌더링 엔진 (사진별 밝기 개별 적용)
+    // 통합 렌더링 엔진
     function renderEngine(targetCtx, isForDownload = false, scaleFactor = 1) {
       const sM2P = M2P * scaleFactor;
       const sPrintW = printW * scaleFactor;
@@ -326,7 +323,7 @@
       targetCtx.fillStyle = bgColor;
       targetCtx.fillRect(0, 0, sPrintW, sPrintH);
 
-      // 2. 워터마크 (다운로드가 아닐 때만 렌더링)
+      // 2. 워터마크
       if (!isForDownload) {
         drawLogoWatermark(targetCtx, scaleFactor);
       }
@@ -345,7 +342,6 @@
           const centerX = sSlotX + sSlotW / 2;
           const centerY = currentSlotY + sSlotH / 2;
 
-          // 사진별 개별 밝기 필터 적용!
           targetCtx.filter = `brightness(${slot.brightness}%)`;
 
           targetCtx.translate(centerX + (slot.x * scaleFactor), centerY + (slot.y * scaleFactor));
@@ -405,7 +401,7 @@
         }
       }
 
-      // 5. 가이드선 (다운로드 시 제거)
+      // 5. 가이드선
       if (!isForDownload) {
         const trimMargin = 0.5 * sM2P;
         targetCtx.strokeStyle = 'rgba(0, 0, 0, 0.25)'; 
@@ -515,7 +511,6 @@
         } else {
           modalTitle.innerText = `${activeSlotIndex + 1}번 사진 관리`;
           
-          // 해당 사진의 현재 밝기 슬라이더에 반영
           const currentBrightness = slots[activeSlotIndex].brightness || 100;
           modalBrightnessInput.value = currentBrightness;
           brightnessValText.innerText = `${currentBrightness}%`;
