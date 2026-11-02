@@ -22,7 +22,7 @@
 
     .main-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 800px; width: 100%; }
     
-    /* 캔버스 프리뷰 영역 (26mm : 71mm 비율 반영) */
+    /* 캔버스 프리뷰 영역 */
     .preview-section { display: flex; flex-direction: column; align-items: center; background: #fff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 340px; }
     .canvas-container { position: relative; width: 208px; height: 568px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
@@ -60,12 +60,11 @@
     <!-- 시안 미리보기 -->
     <div class="preview-section">
       <div class="canvas-container">
-        <!-- 300DPI 기준 고해상도 캔버스 (26mm x 71mm = 307 x 838 px) -->
         <canvas id="keyringCanvas" width="307" height="838"></canvas>
       </div>
       <p style="font-size: 0.72rem; color: #888; margin-top: 10px;">
-        🔴 빨간 원: 3파이 타공 구멍 가이드<br>
-        ⬛ 검은 점선: 실제 완제 재단선 ($25\text{mm} \times 70\text{mm}$)
+        🔴 빨간 점: 3파이 타공 중심 위치<br>
+        ─ 연한 실선: 실제 완제 재단선 ($25\text{mm} \times 70\text{mm}$)
       </p>
     </div>
 
@@ -110,26 +109,22 @@
     let bgColor = '#ffc3d9';
     let selectedSlotIndex = -1;
 
-    // 1mm 당 픽셀 비율 (307px / 26mm ≈ 11.8077 px/mm)
+    // 1mm 당 픽셀 비율
     const M2P = 11.8077;
+    const printW = 26 * M2P; 
+    const printH = 71 * M2P; 
 
-    // 치수 정밀 픽셀 스케일 계산
-    const printW = 26 * M2P; // 307px
-    const printH = 71 * M2P; // 838px
-
-    // 정밀 프레임 스케일
-    const slotW = 21.76 * M2P; // ~257px
-    const slotH = 13.63 * M2P; // ~161px
-    const gapY = 1.3 * M2P;    // ~15px
+    const slotW = 21.76 * M2P; 
+    const slotH = 13.63 * M2P; 
+    const gapY = 1.3 * M2P;    
     const slotX = (printW - slotW) / 2;
 
-    // 타공 3파이 (지름 3mm -> 반지름 1.5mm)
-    const holeRadius = 1.5 * M2P;
+    // 타공 관련 가이드
     const holeX = printW / 2;
-    const holeY = (0.5 + 2.5) * M2P; // 상단 여백 0.5mm + 재단여백에 따른 위치
+    const holeY = (0.5 + 2.5) * M2P; 
+    const holeDotRadius = 0.25 * M2P; // 0.5파이 반지름 (0.25mm)
 
-    // 프레임 시작 Y축
-    const startY = holeY + holeRadius + (3.0 * M2P); 
+    const startY = holeY + (1.5 * M2P) + (3.0 * M2P); 
 
     const slots = [
       { img: null, x: 0, y: 0, scale: 1 },
@@ -198,7 +193,6 @@
           ctx.scale(slot.scale, slot.scale);
           ctx.drawImage(slot.img, -slot.img.width / 2, -slot.img.height / 2);
         } else {
-          // 사진이 없을 때 가이드 배경
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(slotX, currentSlotY, slotW, slotH);
           ctx.fillStyle = '#999999';
@@ -209,15 +203,15 @@
         ctx.restore();
 
         if (!isForDownload) {
-          ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
           ctx.lineWidth = 1;
           ctx.strokeRect(slotX, currentSlotY, slotW, slotH);
         }
       }
 
-      // 3. 하단 문구 렌더링 (4번째 사진 바로 아래, 높이 5mm 영역)
+      // 3. 하단 문구 렌더링
       const lastSlotY = startY + 3 * (slotH + gapY) + slotH;
-      const textAreaY = lastSlotY + (2.5 * M2P); // 문구 중심점
+      const textAreaY = lastSlotY + (2.5 * M2P); 
 
       const text = document.getElementById('textInput').value.trim();
       if (text) {
@@ -229,34 +223,22 @@
         ctx.fillText(text, canvas.width / 2, textAreaY);
       }
 
-      // 4. 가이드선 표시 (다운로드 시에는 숨김)
+      // 4. 가이드선 표시 (다운로드 시에는 완전히 숨김)
       if (!isForDownload) {
-        // 실제 키링 완제 사이즈 가이드선 (25mm x 70mm, 0.5mm 재단 여백 감안)
+        // 완제 재단선: 연한 검정 실선 (25mm x 70mm, 0.5mm 재단 여백)
         const trimMargin = 0.5 * M2P;
-        ctx.strokeStyle = '#222222';
-        ctx.setLineDash([5, 5]);
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)'; // 연한 검정 실선
+        ctx.lineWidth = 1;
         ctx.strokeRect(trimMargin, trimMargin, canvas.width - (trimMargin * 2), canvas.height - (trimMargin * 2));
-        ctx.setLineDash([]);
 
-        // 3파이 타공 위치 가이드 (빨간색 원 및 X 표시)
-        ctx.strokeStyle = '#ff0000';
-        ctx.lineWidth = 2;
+        // 3파이 타공 중심점: 아주 작은 0.5파이 빨간 점
+        ctx.fillStyle = '#ff0000';
         ctx.beginPath();
-        ctx.arc(holeX, holeY, holeRadius, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // 타공 X자 표시
-        ctx.beginPath();
-        ctx.moveTo(holeX - holeRadius, holeY);
-        ctx.lineTo(holeX + holeRadius, holeY);
-        ctx.moveTo(holeX, holeY - holeRadius);
-        ctx.lineTo(holeX, holeY + holeRadius);
-        ctx.stroke();
+        ctx.arc(holeX, holeY, holeDotRadius, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    // 마우스 / 터치 조작 관련 글로벌 상태
     let isDragging = false;
     let startX = 0, startYPos = 0;
     let activeSlotIndex = -1;
@@ -279,7 +261,6 @@
       };
     }
 
-    // 클릭 / 터치 시작
     function handleStart(e) {
       if (e.touches && e.touches.length === 2) {
         const touch1 = e.touches[0];
@@ -296,8 +277,10 @@
 
       if (slotIndex !== -1) {
         activeSlotIndex = slotIndex;
+        selectedSlotIndex = slotIndex;
+
         if (!slots[slotIndex].img) {
-          selectedSlotIndex = slotIndex;
+          e.preventDefault();
           fileInput.click();
         } else {
           isDragging = true;
@@ -307,7 +290,6 @@
       }
     }
 
-    // 이동 / 핀치 줌 처리
     function handleMove(e) {
       if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
         const touch1 = e.touches[0];
@@ -345,7 +327,6 @@
       initialPinchDist = null;
     }
 
-    // 마우스 휠 확대/축소
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const pos = getCanvasCoordinates(e);
@@ -358,7 +339,6 @@
       }
     }, { passive: false });
 
-    // 이벤트 리스너 등록
     canvas.addEventListener('mousedown', handleStart);
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleEnd);
@@ -367,17 +347,17 @@
     window.addEventListener('touchmove', handleMove, { passive: false });
     window.addEventListener('touchend', handleEnd);
 
-    // 고해상도 시안 저장
     function downloadDesign() {
+      // 가이드라인 및 타공 점을 숨긴 깔끔한 상태로 렌더링 후 저장
       drawCanvas(true);
       const link = document.createElement('a');
       link.download = `네컷키링_시안_${Date.now()}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
+      // 화면용 가이드 복원
       drawCanvas(false);
     }
 
-    // 초기 실행
     drawCanvas();
   </script>
 </body>
