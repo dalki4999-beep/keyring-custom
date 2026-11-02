@@ -23,9 +23,17 @@
     .main-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 800px; width: 100%; }
     
     /* 캔버스 프리뷰 영역 */
-    .preview-section { display: flex; flex-direction: column; align-items: center; background: #fff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 340px; }
+    .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 340px; }
     .canvas-container { position: relative; width: 208px; height: 568px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
+
+    /* 모달 팝업 스타일 */
+    .action-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); padding: 16px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; flex-direction: column; gap: 10px; width: 80%; max-width: 220px; text-align: center; }
+    .action-modal p { font-size: 0.85rem; font-weight: bold; color: #444; }
+    .modal-btn { padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+    .btn-change { background: #2196F3; color: white; }
+    .btn-delete { background: #FF5252; color: white; }
+    .btn-cancel { background: #eee; color: #666; }
 
     /* 컨트롤 영역 */
     .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 18px; }
@@ -47,7 +55,6 @@
     .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; }
     .save-btn:hover { background: #1976D2; }
 
-    /* 숨김 파일 입력 */
     input[type="file"] { display: none; }
   </style>
 </head>
@@ -62,6 +69,15 @@
       <div class="canvas-container">
         <canvas id="keyringCanvas" width="307" height="838"></canvas>
       </div>
+
+      <!-- 사진 관리 팝업 모달 -->
+      <div id="actionModal" class="action-modal">
+        <p id="modalTitle">1번 사진 옵션</p>
+        <button class="modal-btn btn-change" onclick="triggerFileChange()">📷 사진 변경하기</button>
+        <button class="modal-btn btn-delete" onclick="deleteSelectedPhoto()">🗑️ 사진 삭제하기</button>
+        <button class="modal-btn btn-cancel" onclick="closeModal()">취소</button>
+      </div>
+
       <p style="font-size: 0.72rem; color: #888; margin-top: 10px;">
         🔴 빨간 점: 3파이 타공 중심 위치<br>
         ─ 연한 실선: 실제 완제 재단선 ($25\text{mm} \times 70\text{mm}$)
@@ -105,6 +121,8 @@
     const canvas = document.getElementById('keyringCanvas');
     const ctx = canvas.getContext('2d');
     const fileInput = document.getElementById('fileInput');
+    const actionModal = document.getElementById('actionModal');
+    const modalTitle = document.getElementById('modalTitle');
 
     let bgColor = '#ffc3d9';
     let selectedSlotIndex = -1;
@@ -119,10 +137,9 @@
     const gapY = 1.3 * M2P;    
     const slotX = (printW - slotW) / 2;
 
-    // 타공 관련 가이드
     const holeX = printW / 2;
     const holeY = (0.5 + 2.5) * M2P; 
-    const holeDotRadius = 0.25 * M2P; // 0.5파이 반지름 (0.25mm)
+    const holeDotRadius = 0.25 * M2P; 
 
     const startY = holeY + (1.5 * M2P) + (3.0 * M2P); 
 
@@ -162,203 +179,7 @@
           slot.x = 0;
           slot.y = 0;
           slot.scale = Math.max(slotW / img.width, slotH / img.height);
+          closeModal();
           drawCanvas();
         };
         img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-      fileInput.value = '';
-    }
-
-    function drawCanvas(isForDownload = false) {
-      // 1. 전체 인쇄 재단 사이즈 배경 채우기 (26mm x 71mm)
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 2. 사진 4개 렌더링
-      for (let i = 0; i < 4; i++) {
-        const slot = slots[i];
-        const currentSlotY = startY + i * (slotH + gapY);
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(slotX, currentSlotY, slotW, slotH);
-        ctx.clip();
-
-        if (slot.img) {
-          const centerX = slotX + slotW / 2;
-          const centerY = currentSlotY + slotH / 2;
-
-          ctx.translate(centerX + slot.x, centerY + slot.y);
-          ctx.scale(slot.scale, slot.scale);
-          ctx.drawImage(slot.img, -slot.img.width / 2, -slot.img.height / 2);
-        } else {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(slotX, currentSlotY, slotW, slotH);
-          ctx.fillStyle = '#999999';
-          ctx.font = 'bold 20px Pretendard, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(`📷 ${i + 1}번 사진 넣기`, slotX + slotW / 2, currentSlotY + slotH / 2 + 7);
-        }
-        ctx.restore();
-
-        if (!isForDownload) {
-          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(slotX, currentSlotY, slotW, slotH);
-        }
-      }
-
-      // 3. 하단 문구 렌더링
-      const lastSlotY = startY + 3 * (slotH + gapY) + slotH;
-      const textAreaY = lastSlotY + (2.5 * M2P); 
-
-      const text = document.getElementById('textInput').value.trim();
-      if (text) {
-        const textColor = document.querySelector('input[name="textColor"]:checked').value;
-        ctx.fillStyle = textColor;
-        ctx.font = 'bold 32px Pretendard, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, canvas.width / 2, textAreaY);
-      }
-
-      // 4. 가이드선 표시 (다운로드 시에는 완전히 숨김)
-      if (!isForDownload) {
-        // 완제 재단선: 연한 검정 실선 (25mm x 70mm, 0.5mm 재단 여백)
-        const trimMargin = 0.5 * M2P;
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)'; // 연한 검정 실선
-        ctx.lineWidth = 1;
-        ctx.strokeRect(trimMargin, trimMargin, canvas.width - (trimMargin * 2), canvas.height - (trimMargin * 2));
-
-        // 3파이 타공 중심점: 아주 작은 0.5파이 빨간 점
-        ctx.fillStyle = '#ff0000';
-        ctx.beginPath();
-        ctx.arc(holeX, holeY, holeDotRadius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    let isDragging = false;
-    let startX = 0, startYPos = 0;
-    let activeSlotIndex = -1;
-    let initialPinchDist = null;
-    let initialScale = 1;
-
-    function getCanvasCoordinates(e) {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-
-      return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY,
-        rawX: clientX,
-        rawY: clientY
-      };
-    }
-
-    function handleStart(e) {
-      if (e.touches && e.touches.length === 2) {
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-        initialPinchDist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
-        if (activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
-          initialScale = slots[activeSlotIndex].scale;
-        }
-        return;
-      }
-
-      const pos = getCanvasCoordinates(e);
-      const slotIndex = getSlotIndexAtPoint(pos.y);
-
-      if (slotIndex !== -1) {
-        activeSlotIndex = slotIndex;
-        selectedSlotIndex = slotIndex;
-
-        if (!slots[slotIndex].img) {
-          e.preventDefault();
-          fileInput.click();
-        } else {
-          isDragging = true;
-          startX = pos.rawX;
-          startYPos = pos.rawY;
-        }
-      }
-    }
-
-    function handleMove(e) {
-      if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-        const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
-        if (initialPinchDist) {
-          const factor = dist / initialPinchDist;
-          slots[activeSlotIndex].scale = initialScale * factor;
-          drawCanvas();
-        }
-        return;
-      }
-
-      if (!isDragging || activeSlotIndex === -1 || !slots[activeSlotIndex].img) return;
-      e.preventDefault();
-
-      const pos = getCanvasCoordinates(e);
-      const rect = canvas.getBoundingClientRect();
-      const scaleFactor = canvas.width / rect.width;
-
-      const dx = (pos.rawX - startX) * scaleFactor;
-      const dy = (pos.rawY - startYPos) * scaleFactor;
-
-      slots[activeSlotIndex].x += dx;
-      slots[activeSlotIndex].y += dy;
-
-      startX = pos.rawX;
-      startYPos = pos.rawY;
-
-      drawCanvas();
-    }
-
-    function handleEnd() {
-      isDragging = false;
-      initialPinchDist = null;
-    }
-
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const pos = getCanvasCoordinates(e);
-      const slotIndex = getSlotIndexAtPoint(pos.y);
-
-      if (slotIndex !== -1 && slots[slotIndex].img) {
-        const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-        slots[slotIndex].scale *= zoomFactor;
-        drawCanvas();
-      }
-    }, { passive: false });
-
-    canvas.addEventListener('mousedown', handleStart);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
-
-    canvas.addEventListener('touchstart', handleStart, { passive: false });
-    window.addEventListener('touchmove', handleMove, { passive: false });
-    window.addEventListener('touchend', handleEnd);
-
-    function downloadDesign() {
-      // 가이드라인 및 타공 점을 숨긴 깔끔한 상태로 렌더링 후 저장
-      drawCanvas(true);
-      const link = document.createElement('a');
-      link.download = `네컷키링_시안_${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
-      // 화면용 가이드 복원
-      drawCanvas(false);
-    }
-
-    drawCanvas();
-  </script>
-</body>
-</html>
