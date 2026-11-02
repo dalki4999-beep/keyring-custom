@@ -542,7 +542,7 @@
     canvas.addEventListener('touchstart', handleStart, { passive: false });
     window.addEventListener('touchmove', handleMove, { passive: false });
 
-    // 모바일 브라우저 파일명 보장 (Blob 객체 생성 다운로드 방식)
+    // PC/모바일 환경 자동 판별 완벽 다운로드 로직
     function downloadDesign() {
       closeModal();
       
@@ -561,18 +561,43 @@
 
       renderEngine(highResCtx, true, highResScale);
 
-      // 모바일 파일명 유지 Blob 호환 로직
-      highResCanvas.toBlob(function(blob) {
-        if (!blob) return;
-        const blobUrl = URL.createObjectURL(blob);
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|KAKAOTALK/i.test(navigator.userAgent);
+      const dataUrl = highResCanvas.toDataURL('image/png', 1.0);
+
+      if (isMobile) {
+        // 모바일/카카오톡 앱인 경우: 저장 창에 이미지를 띄워 꾹 눌러 저장하도록 안내
+        const imageWindow = window.open('', '_blank');
+        if (imageWindow) {
+          imageWindow.document.write(`
+            <html>
+              <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${fileName}</title>
+                <style>
+                  body { margin: 0; padding: 20px; background: #222; color: #fff; text-align: center; font-family: sans-serif; }
+                  p { font-size: 14px; margin-bottom: 15px; color: #ffeb3b; font-weight: bold; }
+                  img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+                </style>
+              </head>
+              <body>
+                <p>👇 이미지를 1초간 '꾹' 눌러 [이미지 저장]을 선택해주세요!</p>
+                <img src="${dataUrl}" alt="네컷키링 시안">
+              </body>
+            </html>
+          `);
+        } else {
+          // 팝업 차단 등으로 안 열릴 경우 현재 페이지에서 직접 이동
+          location.href = dataUrl;
+        }
+      } else {
+        // PC 브라우저인 경우: 자동 파일 다운로드
         const link = document.createElement('a');
         link.download = fileName;
-        link.href = blobUrl;
+        link.href = dataUrl;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-      }, 'image/png', 1.0);
+      }
 
       drawCanvas();
     }
