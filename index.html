@@ -127,11 +127,11 @@
         </div>
       </div>
 
-      <!-- 3. 문구 입력 -->
+      <!-- 3. 문구 입력 (영문 9자 제한 적용) -->
       <div class="control-group">
         <label>3. 하단 문구 입력</label>
         <div class="input-wrapper">
-          <input type="text" id="textInput" class="input-text" maxlength="12" placeholder="한글 6자, 영문 12자" oninput="drawCanvas()">
+          <input type="text" id="textInput" class="input-text" maxlength="9" placeholder="한글 6자, 영문 9자" oninput="drawCanvas()">
           <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
         </div>
         <div class="radio-group">
@@ -328,7 +328,7 @@
         targetCtx.restore();
       }
 
-      // 4. 하단 문구 (포토샵 10pt 크기 기준 반영: 30px -> 40px 확대)
+      // 4. 하단 문구
       const lastSlotY = sStartY + 3 * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
@@ -339,7 +339,7 @@
         targetCtx.font = fontStyle;
         targetCtx.textBaseline = 'middle';
 
-        const heartSize = 32 * scaleFactor; // 하트 크기도 40px 글자 높이에 맞춰 32px로 확대
+        const heartSize = 32 * scaleFactor;
 
         let totalWidth = 0;
         for (let char of text) {
