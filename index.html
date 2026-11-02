@@ -144,13 +144,14 @@
     // 하트 PNG 이미지 로드
     const heartImg = new Image();
     heartImg.src = './heart.png';
-    heartImg.onload = function() {
-      drawCanvas();
-    };
+    heartImg.onload = function() { drawCanvas(); };
 
-    document.fonts.ready.then(() => {
-      drawCanvas();
-    });
+    // 로고 워터마크 PNG 이미지 로드
+    const logoImg = new Image();
+    logoImg.src = './logo.png';
+    logoImg.onload = function() { drawCanvas(); };
+
+    document.fonts.ready.then(() => { drawCanvas(); });
 
     let bgColor = '#ffc3d9';
     let selectedSlotIndex = -1;
@@ -226,9 +227,7 @@
       fileInput.value = '';
     });
 
-    function triggerFileChange() {
-      fileInput.click();
-    }
+    function triggerFileChange() { fileInput.click(); }
 
     function deleteSelectedPhoto() {
       if (selectedSlotIndex !== -1) {
@@ -241,13 +240,35 @@
       }
     }
 
-    function closeModal() {
-      actionModal.style.display = 'none';
+    function closeModal() { actionModal.style.display = 'none'; }
+
+    // logo.png 이미지를 활용한 투명 패턴 워터마크 렌더링
+    function drawLogoWatermark() {
+      if (!logoImg.complete || logoImg.naturalWidth === 0) return;
+
+      ctx.save();
+      ctx.globalAlpha = 0.12; // 워터마크 투명도 (12%)
+
+      const targetW = 90; // 로고 가로 크기(px)
+      const targetH = (logoImg.naturalHeight / logoImg.naturalWidth) * targetW;
+
+      const stepX = 140;
+      const stepY = 120;
+
+      for (let y = -100; y < canvas.height + 200; y += stepY) {
+        for (let x = -100; x < canvas.width + 200; x += stepX) {
+          ctx.drawImage(logoImg, x, y, targetW, targetH);
+        }
+      }
+      ctx.restore();
     }
 
     function drawCanvas(isForDownload = false) {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 워터마크 배경 출력
+      drawLogoWatermark();
 
       for (let i = 0; i < 4; i++) {
         const slot = slots[i];
