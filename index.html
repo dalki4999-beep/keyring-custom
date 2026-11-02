@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>네컷 키링 커스텀 시안 제작기</title>
   <style>
+    /* 1. 커스텀 폰트 (만복이 폰트) 정의 */
+    @font-face {
+      font-family: 'ManbokFont';
+      src: url('./manbok.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     :root {
       --bg-pink: #ffc3d9;
       --bg-yellow: #fdd449;
@@ -14,11 +22,11 @@
       --bg-white: #FFFFFF;
       --bg-black: #222222;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'ManbokFont', 'Pretendard', -apple-system, sans-serif; }
     body { background-color: #f4f5f7; color: #333; padding: 15px; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent; }
     
-    h1 { font-size: 1.3rem; margin-bottom: 6px; text-align: center; font-weight: 700; }
-    p.desc { font-size: 0.85rem; color: #666; margin-bottom: 16px; text-align: center; }
+    h1 { font-size: 1.3rem; margin-bottom: 6px; text-align: center; font-weight: 700; font-family: 'Pretendard', sans-serif; }
+    p.desc { font-size: 0.85rem; color: #666; margin-bottom: 16px; text-align: center; font-family: 'Pretendard', sans-serif; }
 
     .main-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 800px; width: 100%; }
     
@@ -28,15 +36,15 @@
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
 
     /* 모달 팝업 스타일 */
-    .action-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.96); backdrop-filter: blur(4px); padding: 16px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; flex-direction: column; gap: 10px; width: 85%; max-width: 230px; text-align: center; }
+    .action-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.96); backdrop-filter: blur(4px); padding: 16px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; flex-direction: column; gap: 10px; width: 85%; max-width: 230px; text-align: center; font-family: 'Pretendard', sans-serif; }
     .action-modal p { font-size: 0.85rem; font-weight: bold; color: #444; }
-    .modal-btn { padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+    .modal-btn { padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; font-family: 'Pretendard', sans-serif; }
     .btn-change { background: #2196F3; color: white; }
     .btn-delete { background: #FF5252; color: white; }
     .btn-cancel { background: #eee; color: #666; }
 
     /* 컨트롤 영역 */
-    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 18px; }
+    .controls-section { flex: 1; min-width: 280px; max-width: 400px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 18px; font-family: 'Pretendard', sans-serif; }
     .control-group { display: flex; flex-direction: column; gap: 8px; }
     .control-group label { font-weight: 700; font-size: 0.9rem; color: #333; }
 
@@ -47,17 +55,17 @@
 
     /* 입력 박스 및 하트 버튼 레이아웃 */
     .input-wrapper { display: flex; gap: 8px; align-items: center; }
-    .input-text { flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
-    .input-text::placeholder { color: #aaa; font-size: 0.82rem; }
+    .input-text { flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; font-family: 'ManbokFont', sans-serif; }
+    .input-text::placeholder { color: #aaa; font-size: 0.82rem; font-family: 'Pretendard', sans-serif; }
     .input-text:focus { border-color: #2196F3; }
     
-    .btn-heart { padding: 10px 12px; background: #ffebee; color: #e91e63; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+    .btn-heart { padding: 10px 12px; background: #ffebee; color: #e91e63; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: 'Pretendard', sans-serif; }
     .btn-heart:hover { background: #ffcdd2; }
 
     .radio-group { display: flex; gap: 16px; margin-top: 4px; }
-    .radio-group label { font-weight: normal; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .radio-group label { font-weight: normal; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: 'Pretendard', sans-serif; }
 
-    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; }
+    .save-btn { background: #2196F3; color: white; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(33,150,243,0.3); transition: background 0.2s; font-family: 'Pretendard', sans-serif; }
     .save-btn:hover { background: #1976D2; }
 
     input[type="file"] { display: none; }
@@ -83,7 +91,7 @@
         <button class="modal-btn btn-cancel" onclick="closeModal()">취소</button>
       </div>
 
-      <p style="font-size: 0.72rem; color: #888; margin-top: 10px; text-align: center; line-height: 1.4;">
+      <p style="font-size: 0.72rem; color: #888; margin-top: 10px; text-align: center; line-height: 1.4; font-family: 'Pretendard', sans-serif;">
         🔴 빨간 점: 3파이 타공 중심 위치<br>
         ─ 연한 실선: 실제 완제 재단선 (25mm × 70mm)
       </p>
@@ -110,7 +118,6 @@
         <label>2. 하단 문구 입력</label>
         <div class="input-wrapper">
           <input type="text" id="textInput" class="input-text" maxlength="12" placeholder="한글 6자, 영문 12자" oninput="drawCanvas()">
-          <!-- 클릭 시 빨간 하트 기호 입력 -->
           <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
         </div>
         <div class="radio-group">
@@ -133,6 +140,17 @@
     const textInput = document.getElementById('textInput');
     const actionModal = document.getElementById('actionModal');
     const modalTitle = document.getElementById('modalTitle');
+
+    // 하트 PNG 이미지 로드
+    const heartImg = new Image();
+    heartImg.src = './heart.png';
+    heartImg.onload = function() {
+      drawCanvas();
+    };
+
+    document.fonts.ready.then(() => {
+      drawCanvas();
+    });
 
     let bgColor = '#ffc3d9';
     let selectedSlotIndex = -1;
@@ -269,31 +287,45 @@
 
       const text = textInput.value;
       if (text) {
-        const defaultColor = document.querySelector('input[name="textColor"]:checked').value;
-        const fontStyle = 'bold 30px Pretendard, sans-serif';
+        const textColor = document.querySelector('input[name="textColor"]:checked').value;
+        const fontStyle = '30px ManbokFont, sans-serif';
         ctx.font = fontStyle;
         ctx.textBaseline = 'middle';
 
-        // 전체 텍스트 수평 중앙 정렬을 위한 총 폭 계산
+        const heartSize = 24; 
+
+        // 총 폭 계산
         let totalWidth = 0;
         for (let char of text) {
-          totalWidth += ctx.measureText(char).width;
+          if (char === '♥' || char === '♡') {
+            totalWidth += heartSize;
+          } else {
+            totalWidth += ctx.measureText(char).width;
+          }
         }
 
         let startXText = (canvas.width - totalWidth) / 2;
 
-        // 글자별 개별 렌더링 (하트 기호만 빨간색 고정)
         for (let char of text) {
-          const charWidth = ctx.measureText(char).width;
-          
-          if (char === '♥' || char === '♡' || char === '💕' || char === '💗') {
-            ctx.fillStyle = '#FF2D55'; // 빨간색 채워진 하트 컬러
+          if (char === '♥' || char === '♡') {
+            // 하트는 글자색 변경 영향 없이 무조건 선명한 빨간색으로 고정 출력
+            if (heartImg.complete && heartImg.naturalWidth !== 0) {
+              ctx.save();
+              // 원본 이미지 그대로 또는 빨간색 고정 처리
+              ctx.drawImage(heartImg, startXText, textAreaY - (heartSize / 2), heartSize, heartSize);
+              ctx.restore();
+            } else {
+              // 이미지 로딩 전 텍스트 예비용 빨간 하트
+              ctx.fillStyle = '#FF2D55';
+              ctx.fillText('♥', startXText, textAreaY);
+            }
+            startXText += heartSize;
           } else {
-            ctx.fillStyle = defaultColor;
+            // 일반 글자는 선택한 색상(검정/흰색) 적용
+            ctx.fillStyle = textColor;
+            ctx.fillText(char, startXText, textAreaY);
+            startXText += ctx.measureText(char).width;
           }
-
-          ctx.fillText(char, startXText, textAreaY);
-          startXText += charWidth;
         }
       }
 
