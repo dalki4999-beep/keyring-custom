@@ -274,12 +274,6 @@
           ctx.fillText(`📷 ${i + 1}번 사진 넣기`, slotX + slotW / 2, currentSlotY + slotH / 2 + 7);
         }
         ctx.restore();
-
-        if (!isForDownload) {
-          ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(slotX, currentSlotY, slotW, slotH);
-        }
       }
 
       const lastSlotY = startY + 3 * (slotH + gapY) + slotH;
@@ -294,7 +288,6 @@
 
         const heartSize = 24; 
 
-        // 총 폭 계산
         let totalWidth = 0;
         for (let char of text) {
           if (char === '♥' || char === '♡') {
@@ -308,20 +301,16 @@
 
         for (let char of text) {
           if (char === '♥' || char === '♡') {
-            // 하트는 글자색 변경 영향 없이 무조건 선명한 빨간색으로 고정 출력
             if (heartImg.complete && heartImg.naturalWidth !== 0) {
               ctx.save();
-              // 원본 이미지 그대로 또는 빨간색 고정 처리
               ctx.drawImage(heartImg, startXText, textAreaY - (heartSize / 2), heartSize, heartSize);
               ctx.restore();
             } else {
-              // 이미지 로딩 전 텍스트 예비용 빨간 하트
               ctx.fillStyle = '#FF2D55';
               ctx.fillText('♥', startXText, textAreaY);
             }
             startXText += heartSize;
           } else {
-            // 일반 글자는 선택한 색상(검정/흰색) 적용
             ctx.fillStyle = textColor;
             ctx.fillText(char, startXText, textAreaY);
             startXText += ctx.measureText(char).width;
