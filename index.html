@@ -295,7 +295,7 @@
       targetCtx.fillStyle = bgColor;
       targetCtx.fillRect(0, 0, sPrintW, sPrintH);
 
-      // 2. 워터마크 (다운로드가 아닐 때 = 화면 미리보기일 때만 그리기)
+      // 2. 워터마크 (다운로드가 아닐 때만 렌더링)
       if (!isForDownload) {
         drawLogoWatermark(targetCtx, scaleFactor);
       }
@@ -328,18 +328,18 @@
         targetCtx.restore();
       }
 
-      // 4. 하단 문구
+      // 4. 하단 문구 (포토샵 10pt 크기 기준 반영: 30px -> 40px 확대)
       const lastSlotY = sStartY + 3 * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
       const text = textInput.value;
       if (text) {
         const textColor = document.querySelector('input[name="textColor"]:checked').value;
-        const fontStyle = `${30 * scaleFactor}px ManbokFont, sans-serif`;
+        const fontStyle = `${40 * scaleFactor}px ManbokFont, sans-serif`;
         targetCtx.font = fontStyle;
         targetCtx.textBaseline = 'middle';
 
-        const heartSize = 24 * scaleFactor; 
+        const heartSize = 32 * scaleFactor; // 하트 크기도 40px 글자 높이에 맞춰 32px로 확대
 
         let totalWidth = 0;
         for (let char of text) {
@@ -507,7 +507,7 @@
     canvas.addEventListener('touchstart', handleStart, { passive: false });
     window.addEventListener('touchmove', handleMove, { passive: false });
 
-    // 인쇄용 4배 고화질 시안 저장 기능 (채널명_주문자이름 자동 적용)
+    // 인쇄용 4배 고화질 시안 저장 기능
     function downloadDesign() {
       closeModal();
       
