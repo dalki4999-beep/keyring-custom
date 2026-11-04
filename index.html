@@ -20,13 +20,18 @@
       --bg-purple: #f3c4ff;
       --bg-blue: #6c9cff;
       --bg-white: #FFFFFF;
-      --bg-black: #222222;
+      --bg-black: #000000;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'ManbokFont', 'Pretendard', -apple-system, sans-serif; }
     body { background-color: #f4f5f7; color: #333; padding: 8px 12px; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent; }
     
     h1 { font-size: 1.15rem; margin-bottom: 2px; text-align: center; font-weight: 700; font-family: 'Pretendard', sans-serif; }
-    p.desc { font-size: 0.78rem; color: #666; margin-bottom: 10px; text-align: center; font-family: 'Pretendard', sans-serif; }
+    p.desc { font-size: 0.78rem; color: #666; margin-bottom: 8px; text-align: center; font-family: 'Pretendard', sans-serif; }
+
+    /* 컷수 선택 탭 (4컷/3컷/2컷) */
+    .tab-group { display: flex; gap: 6px; margin-bottom: 10px; width: 100%; max-width: 320px; justify-content: center; }
+    .tab-btn { flex: 1; padding: 8px 0; background: #e2e8f0; color: #475569; border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Pretendard', sans-serif; text-align: center; }
+    .tab-btn.active { background: #2196F3; color: white; box-shadow: 0 2px 8px rgba(33,150,243,0.3); }
 
     .main-layout { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 800px; width: 100%; align-items: flex-start; }
     
@@ -79,8 +84,15 @@
 </head>
 <body>
 
-  <h1>네컷 키링 시안 제작기</h1>
-  <p class="desc">사진 칸을 터치해 사진을 넣고, 자유롭게 조절해 보세요!</p>
+  <h1>네컷 키링 커스텀 시안 제작기</h1>
+  <p class="desc">원하는 컷 수를 선택하고 사진을 조절해 보세요!</p>
+
+  <!-- 컷수 선택 탭 -->
+  <div class="tab-group">
+    <button class="tab-btn active" id="tab4" onclick="switchCutMode(4, this)">4컷 키링 (기본)</button>
+    <button class="tab-btn" id="tab3" onclick="switchCutMode(3, this)">3컷 키링</button>
+    <button class="tab-btn" id="tab2" onclick="switchCutMode(2, this)">2컷 키링</button>
+  </div>
 
   <div class="main-layout">
     <!-- 시안 미리보기 -->
@@ -182,6 +194,7 @@
 
     let bgColor = '#ffc3d9';
     let selectedSlotIndex = -1;
+    let currentCutCount = 4; // 현재 선택된 컷수 (기본 4컷)
 
     // 화면용 기본 배율 (1mm = 11.8077px)
     const M2P = 11.8077;
@@ -189,22 +202,41 @@
     const printH = 71 * M2P; 
 
     const slotW = 21.0 * M2P; 
-    const slotH = 13.0 * M2P; 
-    const gapY = 1.3 * M2P;    
     const slotX = (printW - slotW) / 2;
 
     const holeX = printW / 2;
     const holeY = 3.0 * M2P;   
     const holeDotRadius = 0.25 * M2P; 
 
-    const startY = 6.0 * M2P;  
+    const startY = 6.0 * M2P; // 첫 번째 사진 시작 위치 (상단 6mm 고정)
 
+    // 사진 4칸 데이터 고정 유지
     const slots = [
       { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
       { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
       { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
       { img: null, x: 0, y: 0, scale: 1, brightness: 100 }
     ];
+
+    // 컷수별 규격 계산 함수 (시작위치 6mm, 끝위치 62.9mm 동일)
+    function getCutSpecs(count) {
+      if (count === 2) {
+        return { slotH: 27.2 * M2P, gapY: 2.5 * M2P };
+      } else if (count === 3) {
+        return { slotH: 17.7 * M2P, gapY: 1.9 * M2P };
+      } else {
+        // 기본 4컷
+        return { slotH: 13.0 * M2P, gapY: 1.3 * M2P };
+      }
+    }
+
+    // 컷수 선택 탭 변경 함수
+    function switchCutMode(count, el) {
+      currentCutCount = count;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      drawCanvas();
+    }
 
     function setBgColor(color, el) {
       bgColor = color;
@@ -214,9 +246,10 @@
     }
 
     function getSlotIndexAtPoint(canvasY) {
-      for (let i = 0; i < 4; i++) {
-        const top = startY + i * (slotH + gapY);
-        const bottom = top + slotH;
+      const specs = getCutSpecs(currentCutCount);
+      for (let i = 0; i < currentCutCount; i++) {
+        const top = startY + i * (specs.slotH + specs.gapY);
+        const bottom = top + specs.slotH;
         if (canvasY >= top && canvasY <= bottom) return i;
       }
       return -1;
@@ -242,11 +275,12 @@
       reader.onload = function(evt) {
         const img = new Image();
         img.onload = function() {
+          const specs = getCutSpecs(currentCutCount);
           const slot = slots[selectedSlotIndex];
           slot.img = img;
           slot.x = 0;
           slot.y = 0;
-          slot.scale = Math.max(slotW / img.width, slotH / img.height);
+          slot.scale = Math.max(slotW / img.width, specs.slotH / img.height);
           slot.brightness = 100;
           
           modalBrightnessInput.value = 100;
@@ -306,33 +340,35 @@
       targetCtx.restore();
     }
 
-    // 통합 렌더링 엔진 (저장 시 상단 헤더 띠에 주문정보 자동 인쇄)
+    // 통합 렌더링 엔진 (동적 컷수 적용)
     function renderEngine(targetCtx, isForDownload = false, scaleFactor = 1, headerOffset = 0) {
       const sM2P = M2P * scaleFactor;
       const sPrintW = printW * scaleFactor;
       const sPrintH = printH * scaleFactor;
       const sSlotW = slotW * scaleFactor;
-      const sSlotH = slotH * scaleFactor;
-      const sGapY = gapY * scaleFactor;
       const sSlotX = slotX * scaleFactor;
       const sHoleX = holeX * scaleFactor;
       const sHoleY = (holeY * scaleFactor) + headerOffset;
       const sHoleDotRadius = holeDotRadius * scaleFactor;
       const sStartY = (startY * scaleFactor) + headerOffset;
 
-      // 0. 저장 시 상단 주문자 정보 헤더 띠 렌더링
+      const specs = getCutSpecs(currentCutCount);
+      const sSlotH = specs.slotH * scaleFactor;
+      const sGapY = specs.gapY * scaleFactor;
+
+      // 0. 저장 시 상단 헤더 띠 렌더링
       if (isForDownload && headerOffset > 0) {
         const channel = document.querySelector('input[name="channel"]:checked').value;
         const orderer = document.getElementById('ordererInput').value.trim() || '무명';
 
-        targetCtx.fillStyle = '#1e293b'; // 깔끔한 다크 브라운 네이비 띠
+        targetCtx.fillStyle = '#1e293b';
         targetCtx.fillRect(0, 0, sPrintW, headerOffset);
 
         targetCtx.fillStyle = '#ffffff';
-        targetCtx.font = `bold ${28 * scaleFactor}px Pretendard, sans-serif`;
+        targetCtx.font = `bold ${26 * scaleFactor}px Pretendard, sans-serif`;
         targetCtx.textAlign = 'center';
         targetCtx.textBaseline = 'middle';
-        targetCtx.fillText(`[${channel}] ${orderer}님 시안`, sPrintW / 2, headerOffset / 2);
+        targetCtx.fillText(`[${channel}] ${orderer}님 (${currentCutCount}컷시안)`, sPrintW / 2, headerOffset / 2);
       }
 
       // 1. 키링 배경
@@ -344,8 +380,8 @@
         drawLogoWatermark(targetCtx, scaleFactor);
       }
 
-      // 3. 사진 4칸
-      for (let i = 0; i < 4; i++) {
+      // 3. 사진 칸 렌더링 (선택된 currentCutCount 만큼 렌더링)
+      for (let i = 0; i < currentCutCount; i++) {
         const slot = slots[i];
         const currentSlotY = sStartY + i * (sSlotH + sGapY);
 
@@ -375,7 +411,7 @@
       }
 
       // 4. 하단 문구
-      const lastSlotY = sStartY + 3 * (sSlotH + sGapY) + sSlotH;
+      const lastSlotY = sStartY + (currentCutCount - 1) * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
       const text = textInput.value;
@@ -584,10 +620,10 @@
       
       const channel = document.querySelector('input[name="channel"]:checked').value;
       const orderer = document.getElementById('ordererInput').value.trim() || '무명';
-      const fileName = `${channel}_${orderer}_네컷키링_시안.png`;
+      const fileName = `${channel}_${orderer}_${currentCutCount}컷키링_시안.png`;
 
       const highResScale = 4;
-      const headerOffsetPX = 100 * highResScale; // 400px 높이의 상단 헤더 띠 영역
+      const headerOffsetPX = 100 * highResScale;
 
       const highResCanvas = document.createElement('canvas');
       highResCanvas.width = canvas.width * highResScale;   
@@ -597,7 +633,6 @@
       highResCtx.imageSmoothingEnabled = true;
       highResCtx.imageSmoothingQuality = 'high';
 
-      // 저장용 헤더 포함 렌더링 호출
       renderEngine(highResCtx, true, highResScale, headerOffsetPX);
 
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|KAKAOTALK/i.test(navigator.userAgent);
