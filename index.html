@@ -29,14 +29,18 @@
     p.desc { font-size: 0.73rem; color: #555; margin-bottom: 6px; text-align: center; font-family: 'Pretendard', sans-serif; line-height: 1.3; max-width: 320px; word-break: keep-all; }
     p.desc span.highlight { color: #e91e63; font-weight: bold; }
 
-    /* 컷수 선택 탭 (4컷/3컷/2컷) */
-    .tab-group { display: flex; gap: 6px; margin-bottom: 8px; width: 100%; max-width: 300px; justify-content: center; }
+    /* 컷수 및 앞뒤면 선택 탭 */
+    .tab-group { display: flex; gap: 6px; margin-bottom: 6px; width: 100%; max-width: 300px; justify-content: center; }
     .tab-btn { flex: 1; padding: 6px 0; background: #e2e8f0; color: #475569; border: none; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'Pretendard', sans-serif; text-align: center; }
     .tab-btn.active { background: #2196F3; color: white; box-shadow: 0 2px 6px rgba(33,150,243,0.3); }
 
+    .side-tab-group { display: none; gap: 6px; margin-bottom: 8px; width: 100%; max-width: 300px; justify-content: center; }
+    .side-tab-btn { flex: 1; padding: 6px 0; background: #f1f5f9; color: #64748b; border: 1.5px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; font-family: 'Pretendard', sans-serif; text-align: center; }
+    .side-tab-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
+
     .main-layout { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 800px; width: 100%; align-items: flex-start; }
     
-    /* 캔버스 프리뷰 영역 (모바일 화면 한눈 피팅 축소) */
+    /* 캔버스 프리뷰 영역 */
     .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 220px; }
     .canvas-container { position: relative; width: 142px; height: 390px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
@@ -58,6 +62,11 @@
     .controls-section { flex: 1; min-width: 260px; max-width: 300px; width: 100%; background: #fff; padding: 12px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 10px; font-family: 'Pretendard', sans-serif; }
     .control-group { display: flex; flex-direction: column; gap: 5px; width: 100%; }
     .control-group label { font-weight: 700; font-size: 0.82rem; color: #333; }
+
+    /* 계좌안내 박스 */
+    .bank-box { display: none; background: #fff7ed; border: 1px solid #ffedd5; border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; color: #9a3412; flex-direction: column; gap: 4px; }
+    .bank-box strong { color: #c2410c; font-size: 0.78rem; }
+    .btn-copy-bank { background: #ea580c; color: white; border: none; padding: 6px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; margin-top: 2px; font-family: 'Pretendard', sans-serif; }
 
     /* 배경색 선택 버튼 */
     .color-options { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -104,6 +113,12 @@
     <button class="tab-btn" id="tab2" onclick="switchCutMode(2, this)">2컷 키링</button>
   </div>
 
+  <!-- 양면 다른 디자인 시 앞/뒷면 전환 탭 -->
+  <div class="side-tab-group" id="sideTabGroup">
+    <button class="side-tab-btn active" id="sideFront" onclick="switchSideMode('front', this)">앞면 시안 편집</button>
+    <button class="side-tab-btn" id="sideBack" onclick="switchSideMode('back', this)">뒷면 시안 편집</button>
+  </div>
+
   <div class="main-layout">
     <!-- 시안 미리보기 -->
     <div class="preview-section">
@@ -147,9 +162,25 @@
         <input type="text" id="ordererInput" class="input-text normal-font" placeholder="주문자 성함 (예: 홍길동)">
       </div>
 
-      <!-- 2. 배경색 선택 -->
+      <!-- 2. 양면 디자인 옵션 선택 -->
       <div class="control-group">
-        <label>2. 키링 배경 컬러</label>
+        <label>2. 양면 디자인 방식</label>
+        <div class="radio-group">
+          <label><input type="radio" name="doubleSide" value="same" checked onchange="toggleDoubleSide(false)"> 양면 동일 디자인 (기본)</label>
+          <label><input type="radio" name="doubleSide" value="diff" onchange="toggleDoubleSide(true)"> 양면 다른 디자인 (+3,000원)</label>
+        </div>
+
+        <!-- 계좌 복사 상자 -->
+        <div class="bank-box" id="bankBox">
+          <strong>💡 양면 다른 디자인 안내</strong>
+          양면이 다를 경우 3,000원의 추가금이 발생합니다. 입금 후 시안을 저장해 주세요!
+          <button type="button" class="btn-copy-bank" onclick="copyBankAccount()">📋 계좌번호 복사하기</button>
+        </div>
+      </div>
+
+      <!-- 3. 배경색 선택 -->
+      <div class="control-group">
+        <label>3. 키링 배경 컬러</label>
         <div class="color-options">
           <div class="color-btn active" style="background: var(--bg-pink);" title="핑크" onclick="setBgColor('#ffc3d9', this)"></div>
           <div class="color-btn" style="background: var(--bg-yellow);" title="노랑" onclick="setBgColor('#fdd449', this)"></div>
@@ -161,20 +192,20 @@
         </div>
       </div>
 
-      <!-- 3. 문구 입력 -->
+      <!-- 4. 문구 입력 -->
       <div class="control-group">
-        <label>3. 하단 문구 입력 (하트 포함 8자까지)</label>
+        <label>4. 하단 문구 입력 (하트 포함 8자까지)</label>
         <div class="input-wrapper">
-          <input type="text" id="textInput" class="input-text" maxlength="8" placeholder="최대 8자 입력" oninput="drawCanvas()">
+          <input type="text" id="textInput" class="input-text" maxlength="8" placeholder="최대 8자 입력" oninput="onTextInput()">
           <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
         </div>
         <div class="radio-group">
-          <label><input type="radio" name="textColor" value="#000000" checked onchange="drawCanvas()"> 검정 글자</label>
-          <label><input type="radio" name="textColor" value="#FFFFFF" onchange="drawCanvas()"> 흰색 글자</label>
+          <label><input type="radio" name="textColor" value="#000000" checked onchange="onTextColorInput()"> 검정 글자</label>
+          <label><input type="radio" name="textColor" value="#FFFFFF" onchange="onTextColorInput()"> 흰색 글자</label>
         </div>
       </div>
 
-      <!-- 4. 저장 버튼 -->
+      <!-- 5. 저장 버튼 -->
       <button class="save-btn" onclick="downloadDesign()">💾 완성 시안 저장하기</button>
 
       <!-- 실물 크기 비교 안내 카드 -->
@@ -200,6 +231,8 @@
     const modalTitle = document.getElementById('modalTitle');
     const modalBrightnessInput = document.getElementById('modalBrightnessInput');
     const brightnessValText = document.getElementById('brightnessValText');
+    const bankBox = document.getElementById('bankBox');
+    const sideTabGroup = document.getElementById('sideTabGroup');
 
     // 자산 이미지 로드
     const heartImg = new Image();
@@ -212,9 +245,10 @@
 
     document.fonts.ready.then(() => { drawCanvas(); });
 
-    let bgColor = '#ffc3d9';
     let selectedSlotIndex = -1;
     let currentCutCount = 4;
+    let isDoubleSideMode = false;
+    let activeSide = 'front';
 
     // 화면용 기본 배율 (1mm = 11.8077px)
     const M2P = 11.8077;
@@ -230,12 +264,100 @@
 
     const startY = 6.0 * M2P;
 
-    const slots = [
-      { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-      { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-      { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-      { img: null, x: 0, y: 0, scale: 1, brightness: 100 }
-    ];
+    const designData = {
+      front: {
+        bgColor: '#ffc3d9',
+        text: '',
+        textColor: '#000000',
+        slots: [
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 }
+        ]
+      },
+      back: {
+        bgColor: '#ffc3d9',
+        text: '',
+        textColor: '#000000',
+        slots: [
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100 }
+        ]
+      }
+    };
+
+    function getCurrentSideData() {
+      return designData[activeSide];
+    }
+
+    function toggleDoubleSide(isDiff) {
+      isDoubleSideMode = isDiff;
+      if (isDiff) {
+        bankBox.style.display = 'flex';
+        sideTabGroup.style.display = 'flex';
+      } else {
+        bankBox.style.display = 'none';
+        sideTabGroup.style.display = 'none';
+        activeSide = 'front';
+      }
+      syncControlsWithSideData();
+      drawCanvas();
+    }
+
+    function copyBankAccount() {
+      const bankInfo = "3333024350794 카카오뱅크 서화진";
+      navigator.clipboard.writeText(bankInfo).then(() => {
+        alert("계좌번호가 복사되었습니다!\n" + bankInfo);
+      }).catch(() => {
+        alert("계좌번호: " + bankInfo);
+      });
+    }
+
+    function switchSideMode(side, el) {
+      activeSide = side;
+      document.querySelectorAll('.side-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      syncControlsWithSideData();
+      drawCanvas();
+    }
+
+    function syncControlsWithSideData() {
+      const sideData = getCurrentSideData();
+      textInput.value = sideData.text;
+      
+      const colorRadios = document.querySelectorAll('input[name="textColor"]');
+      colorRadios.forEach(radio => {
+        radio.checked = (radio.value === sideData.textColor);
+      });
+
+      document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.style.backgroundColor.toLowerCase() === sideData.bgColor.toLowerCase()) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    function onTextInput() {
+      getCurrentSideData().text = textInput.value;
+      drawCanvas();
+    }
+
+    function onTextColorInput() {
+      const selectedColor = document.querySelector('input[name="textColor"]:checked').value;
+      getCurrentSideData().textColor = selectedColor;
+      drawCanvas();
+    }
+
+    function setBgColor(color, el) {
+      getCurrentSideData().bgColor = color;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      drawCanvas();
+    }
 
     function getCutSpecs(count) {
       if (count === 2) {
@@ -250,13 +372,6 @@
     function switchCutMode(count, el) {
       currentCutCount = count;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-      drawCanvas();
-    }
-
-    function setBgColor(color, el) {
-      bgColor = color;
-      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
       el.classList.add('active');
       drawCanvas();
     }
@@ -280,7 +395,7 @@
       textInput.value = text.substring(0, start) + symbol + text.substring(end);
       textInput.selectionStart = textInput.selectionEnd = start + symbol.length;
       textInput.focus();
-      drawCanvas();
+      onTextInput();
     }
 
     fileInput.addEventListener('change', function(e) {
@@ -292,7 +407,7 @@
         const img = new Image();
         img.onload = function() {
           const specs = getCutSpecs(currentCutCount);
-          const slot = slots[selectedSlotIndex];
+          const slot = getCurrentSideData().slots[selectedSlotIndex];
           slot.img = img;
           slot.x = 0;
           slot.y = 0;
@@ -315,11 +430,12 @@
 
     function deleteSelectedPhoto() {
       if (selectedSlotIndex !== -1) {
-        slots[selectedSlotIndex].img = null;
-        slots[selectedSlotIndex].x = 0;
-        slots[selectedSlotIndex].y = 0;
-        slots[selectedSlotIndex].scale = 1;
-        slots[selectedSlotIndex].brightness = 100;
+        const slot = getCurrentSideData().slots[selectedSlotIndex];
+        slot.img = null;
+        slot.x = 0;
+        slot.y = 0;
+        slot.scale = 1;
+        slot.brightness = 100;
         closeModal();
         drawCanvas();
       }
@@ -327,7 +443,7 @@
 
     function onBrightnessChange(val) {
       if (selectedSlotIndex !== -1) {
-        slots[selectedSlotIndex].brightness = val;
+        getCurrentSideData().slots[selectedSlotIndex].brightness = val;
         brightnessValText.innerText = `${val}%`;
         drawCanvas();
       }
@@ -336,7 +452,7 @@
     function closeModal() { actionModal.style.display = 'none'; }
 
     // 워터마크 렌더링
-    function drawLogoWatermark(targetCtx, scale = 1) {
+    function drawLogoWatermark(targetCtx, scale = 1, offsetX = 0) {
       if (!logoImg.complete || logoImg.naturalWidth === 0) return;
 
       targetCtx.save();
@@ -349,21 +465,21 @@
       const stepY = 160 * scale;
 
       for (let y = -100 * scale; y < (canvas.height * scale) + (200 * scale); y += stepY) {
-        for (let x = -100 * scale; x < (canvas.width * scale) + (200 * scale); x += stepX) {
+        for (let x = offsetX - (100 * scale); x < offsetX + (canvas.width * scale) + (200 * scale); x += stepX) {
           targetCtx.drawImage(logoImg, x, y, targetW, targetH);
         }
       }
       targetCtx.restore();
     }
 
-    // 통합 렌더링 엔진
-    function renderEngine(targetCtx, isForDownload = false, scaleFactor = 1, headerOffset = 0) {
+    // 단일 키링 렌더링 모듈
+    function drawSingleKeyring(targetCtx, sideData, isForDownload = false, scaleFactor = 1, headerOffset = 0, offsetX = 0) {
       const sM2P = M2P * scaleFactor;
       const sPrintW = printW * scaleFactor;
       const sPrintH = printH * scaleFactor;
       const sSlotW = slotW * scaleFactor;
-      const sSlotX = slotX * scaleFactor;
-      const sHoleX = holeX * scaleFactor;
+      const sSlotX = (slotX * scaleFactor) + offsetX;
+      const sHoleX = (holeX * scaleFactor) + offsetX;
       const sHoleY = (holeY * scaleFactor) + headerOffset;
       const sHoleDotRadius = holeDotRadius * scaleFactor;
       const sStartY = (startY * scaleFactor) + headerOffset;
@@ -372,33 +488,18 @@
       const sSlotH = specs.slotH * scaleFactor;
       const sGapY = specs.gapY * scaleFactor;
 
-      // 0. 저장 시 상단 헤더 띠 렌더링
-      if (isForDownload && headerOffset > 0) {
-        const channel = document.querySelector('input[name="channel"]:checked').value;
-        const orderer = document.getElementById('ordererInput').value.trim() || '무명';
-
-        targetCtx.fillStyle = '#1e293b';
-        targetCtx.fillRect(0, 0, sPrintW, headerOffset);
-
-        targetCtx.fillStyle = '#ffffff';
-        targetCtx.font = `bold ${26 * scaleFactor}px Pretendard, sans-serif`;
-        targetCtx.textAlign = 'center';
-        targetCtx.textBaseline = 'middle';
-        targetCtx.fillText(`[${channel}] ${orderer}님 (${currentCutCount}컷시안)`, sPrintW / 2, headerOffset / 2);
-      }
-
       // 1. 키링 배경
-      targetCtx.fillStyle = bgColor;
-      targetCtx.fillRect(0, headerOffset, sPrintW, sPrintH);
+      targetCtx.fillStyle = sideData.bgColor;
+      targetCtx.fillRect(offsetX, headerOffset, sPrintW, sPrintH);
 
       // 2. 워터마크
       if (!isForDownload) {
-        drawLogoWatermark(targetCtx, scaleFactor);
+        drawLogoWatermark(targetCtx, scaleFactor, offsetX);
       }
 
       // 3. 사진 칸 렌더링
       for (let i = 0; i < currentCutCount; i++) {
-        const slot = slots[i];
+        const slot = sideData.slots[i];
         const currentSlotY = sStartY + i * (sSlotH + sGapY);
 
         targetCtx.save();
@@ -430,16 +531,16 @@
       const lastSlotY = sStartY + (currentCutCount - 1) * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
-      const text = textInput.value;
+      const text = sideData.text;
       if (text) {
         targetCtx.save();
         
         const safeMargin = 1.5 * sM2P;
         targetCtx.beginPath();
-        targetCtx.rect(safeMargin, lastSlotY, sPrintW - (safeMargin * 2), (sPrintH + headerOffset) - lastSlotY);
+        targetCtx.rect(offsetX + safeMargin, lastSlotY, sPrintW - (safeMargin * 2), (sPrintH + headerOffset) - lastSlotY);
         targetCtx.clip();
 
-        const textColor = document.querySelector('input[name="textColor"]:checked').value;
+        const textColor = sideData.textColor;
         const fontStyle = `${40 * scaleFactor}px ManbokFont, sans-serif`;
         targetCtx.font = fontStyle;
         targetCtx.textBaseline = 'middle';
@@ -455,7 +556,7 @@
           }
         }
 
-        let startXText = (sPrintW - totalWidth) / 2;
+        let startXText = offsetX + (sPrintW - totalWidth) / 2;
 
         for (let char of text) {
           if (char === '♥' || char === '♡') {
@@ -483,7 +584,7 @@
         const trimMargin = 0.5 * sM2P;
         targetCtx.strokeStyle = 'rgba(0, 0, 0, 0.25)'; 
         targetCtx.lineWidth = 1 * scaleFactor;
-        targetCtx.strokeRect(trimMargin, trimMargin, sPrintW - (trimMargin * 2), sPrintH - (trimMargin * 2));
+        targetCtx.strokeRect(offsetX + trimMargin, trimMargin, sPrintW - (trimMargin * 2), sPrintH - (trimMargin * 2));
 
         targetCtx.fillStyle = '#ff0000';
         targetCtx.beginPath();
@@ -493,7 +594,8 @@
     }
 
     function drawCanvas() {
-      renderEngine(ctx, false, 1, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSingleKeyring(ctx, getCurrentSideData(), false, 1, 0, 0);
     }
 
     let isDragging = false;
@@ -534,8 +636,8 @@
         
         if (slotIdx !== -1) {
           activeSlotIndex = slotIdx;
-          if (slots[activeSlotIndex].img) {
-            initialScale = slots[activeSlotIndex].scale;
+          if (getCurrentSideData().slots[activeSlotIndex].img) {
+            initialScale = getCurrentSideData().slots[activeSlotIndex].scale;
           }
         }
         return;
@@ -548,7 +650,7 @@
         activeSlotIndex = slotIndex;
         selectedSlotIndex = slotIndex;
 
-        if (slots[slotIndex].img) {
+        if (getCurrentSideData().slots[slotIndex].img) {
           isDragging = true;
           startX = pos.rawX;
           startYPos = pos.rawY;
@@ -557,19 +659,19 @@
     }
 
     function handleMove(e) {
-      if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && slots[activeSlotIndex].img) {
+      if (e.touches && e.touches.length === 2 && activeSlotIndex !== -1 && getCurrentSideData().slots[activeSlotIndex].img) {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
         if (initialPinchDist && initialPinchDist > 0) {
           const factor = dist / initialPinchDist;
-          slots[activeSlotIndex].scale = Math.max(initialScale * factor, 0.1);
+          getCurrentSideData().slots[activeSlotIndex].scale = Math.max(initialScale * factor, 0.1);
           drawCanvas();
         }
         return;
       }
 
-      if (!isDragging || activeSlotIndex === -1 || !slots[activeSlotIndex].img) return;
+      if (!isDragging || activeSlotIndex === -1 || !getCurrentSideData().slots[activeSlotIndex].img) return;
       
       const pos = getCanvasCoordinates(e);
       const rect = canvas.getBoundingClientRect();
@@ -582,8 +684,9 @@
         hasMoved = true;
       }
 
-      slots[activeSlotIndex].x += dx;
-      slots[activeSlotIndex].y += dy;
+      const currentSlot = getCurrentSideData().slots[activeSlotIndex];
+      currentSlot.x += dx;
+      currentSlot.y += dy;
 
       startX = pos.rawX;
       startYPos = pos.rawY;
@@ -593,12 +696,12 @@
 
     function handleEnd(e) {
       if (!hasMoved && activeSlotIndex !== -1) {
-        if (!slots[activeSlotIndex].img) {
+        if (!getCurrentSideData().slots[activeSlotIndex].img) {
           setTimeout(() => { fileInput.click(); }, 10);
         } else {
           modalTitle.innerText = `${activeSlotIndex + 1}번 사진 관리`;
           
-          const currentBrightness = slots[activeSlotIndex].brightness || 100;
+          const currentBrightness = getCurrentSideData().slots[activeSlotIndex].brightness || 100;
           modalBrightnessInput.value = currentBrightness;
           brightnessValText.innerText = `${currentBrightness}%`;
 
@@ -614,9 +717,9 @@
       const pos = getCanvasCoordinates(e);
       const slotIndex = getSlotIndexAtPoint(pos.y);
 
-      if (slotIndex !== -1 && slots[slotIndex].img) {
+      if (slotIndex !== -1 && getCurrentSideData().slots[slotIndex].img) {
         const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-        slots[slotIndex].scale = Math.max(slots[slotIndex].scale * zoomFactor, 0.1);
+        getCurrentSideData().slots[slotIndex].scale = Math.max(getCurrentSideData().slots[slotIndex].scale * zoomFactor, 0.1);
         drawCanvas();
       }
     }, { passive: false });
@@ -630,26 +733,51 @@
     window.addEventListener('touchmove', handleMove, { passive: false });
     window.addEventListener('touchend', () => { isDragging = false; initialPinchDist = null; });
 
-    // 시안 상단 헤더 띠 포함 고화질 저장 로직
+    // 시안 상단 헤더 띠 포함 고화질 저장 로직 (1안 카카오톡 바로가기 버튼 탑재)
     function downloadDesign() {
       closeModal();
       
       const channel = document.querySelector('input[name="channel"]:checked').value;
       const orderer = document.getElementById('ordererInput').value.trim() || '무명';
-      const fileName = `${channel}_${orderer}_${currentCutCount}컷키링_시안.png`;
-
+      
       const highResScale = 4;
       const headerOffsetPX = 100 * highResScale;
+      const singleWidthPX = canvas.width * highResScale;
+      const gapPX = isDoubleSideMode ? (20 * highResScale) : 0;
+
+      const totalCanvasWidth = isDoubleSideMode ? (singleWidthPX * 2 + gapPX) : singleWidthPX;
+      const fileName = `${channel}_${orderer}_${currentCutCount}컷키링_${isDoubleSideMode ? '양면다름' : '시안'}.png`;
 
       const highResCanvas = document.createElement('canvas');
-      highResCanvas.width = canvas.width * highResScale;   
+      highResCanvas.width = totalCanvasWidth;   
       highResCanvas.height = (canvas.height * highResScale) + headerOffsetPX; 
       
       const highResCtx = highResCanvas.getContext('2d');
       highResCtx.imageSmoothingEnabled = true;
       highResCtx.imageSmoothingQuality = 'high';
 
-      renderEngine(highResCtx, true, highResScale, headerOffsetPX);
+      // 0. 헤더 띠 렌더링
+      highResCtx.fillStyle = '#1e293b';
+      highResCtx.fillRect(0, 0, totalCanvasWidth, headerOffsetPX);
+
+      highResCtx.fillStyle = '#ffffff';
+      highResCtx.font = `bold ${26 * highResScale}px Pretendard, sans-serif`;
+      highResCtx.textAlign = 'center';
+      highResCtx.textBaseline = 'middle';
+      
+      const doubleText = isDoubleSideMode ? ' (양면다름_3000원추가)' : '';
+      highResCtx.fillText(`[${channel}] ${orderer}님 (${currentCutCount}컷시안${doubleText})`, totalCanvasWidth / 2, headerOffsetPX / 2);
+
+      // 전체 배경 흰색
+      highResCtx.fillStyle = '#ffffff';
+      highResCtx.fillRect(0, headerOffsetPX, totalCanvasWidth, highResCanvas.height - headerOffsetPX);
+
+      if (isDoubleSideMode) {
+        drawSingleKeyring(highResCtx, designData.front, true, highResScale, headerOffsetPX, 0);
+        drawSingleKeyring(highResCtx, designData.back, true, highResScale, headerOffsetPX, singleWidthPX + gapPX);
+      } else {
+        drawSingleKeyring(highResCtx, designData.front, true, highResScale, headerOffsetPX, 0);
+      }
 
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|KAKAOTALK/i.test(navigator.userAgent);
       const dataUrl = highResCanvas.toDataURL('image/png', 1.0);
@@ -663,13 +791,16 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>${fileName}</title>
                 <style>
-                  body { margin: 0; padding: 20px; background: #222; color: #fff; text-align: center; font-family: sans-serif; }
-                  p { font-size: 14px; margin-bottom: 15px; color: #ffeb3b; font-weight: bold; }
+                  body { margin: 0; padding: 16px; background: #222; color: #fff; text-align: center; font-family: sans-serif; }
+                  .btn-kakao { display: inline-block; background: #FEE500; color: #191919; font-weight: bold; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-size: 15px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+                  p { font-size: 13px; margin-bottom: 12px; color: #ffeb3b; font-weight: bold; line-height: 1.4; }
                   img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
                 </style>
               </head>
               <body>
-                <p>👇 이미지를 1초간 '꾹' 눌러 [이미지 저장]을 선택해주세요!</p>
+                <!-- 최상단 카카오톡 채널 채팅창 이동 버튼 -->
+                <a class="btn-kakao" href="http://pf.kakao.com/_LxjGiC/chat" target="_blank">💬 저장 후 카톡으로 시안 전송하기</a>
+                <p>👇 아래 이미지를 1초간 '꾹' 눌러 [이미지 저장]을 완료하신 후 위 카카오톡 버튼을 눌러주세요!</p>
                 <img src="${dataUrl}" alt="네컷키링 시안">
               </body>
             </html>
