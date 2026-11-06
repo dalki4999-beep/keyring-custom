@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>네컷 키링 커스텀 시안 제작기</title>
   <style>
     /* 1. 커스텀 폰트 (만복이 폰트) 정의 */
@@ -41,12 +41,12 @@
     .main-layout { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 800px; width: 100%; align-items: flex-start; }
     
     /* 캔버스 프리뷰 영역 */
-    .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 220px; }
-    .canvas-container { position: relative; width: 142px; height: 390px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
+    .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 250px; }
+    .canvas-container { position: relative; width: 162px; height: 445px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
 
     /* 하단 바텀시트 팝업 모달 */
-    .action-modal { display: none; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.98); backdrop-filter: blur(6px); padding: 10px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 10; flex-direction: column; gap: 6px; width: 94%; max-width: 210px; text-align: center; font-family: 'Pretendard', sans-serif; border: 1px solid rgba(0,0,0,0.08); }
+    .action-modal { display: none; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.98); backdrop-filter: blur(6px); padding: 10px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 10; flex-direction: column; gap: 6px; width: 94%; max-width: 220px; text-align: center; font-family: 'Pretendard', sans-serif; border: 1px solid rgba(0,0,0,0.08); }
     .action-modal p { font-size: 0.78rem; font-weight: bold; color: #333; }
     
     .brightness-control-group { display: flex; flex-direction: column; gap: 3px; background: #f8f9fa; padding: 6px 8px; border-radius: 6px; border: 1px solid #eee; }
@@ -54,6 +54,7 @@
     .brightness-control-group input[type="range"] { width: 100%; cursor: pointer; margin-top: 2px; }
 
     .modal-btn { padding: 6px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; transition: background 0.2s; font-family: 'Pretendard', sans-serif; }
+    .btn-rotate { background: #4caf50; color: white; }
     .btn-change { background: #2196F3; color: white; }
     .btn-delete { background: #FF5252; color: white; }
     .btn-cancel { background: #eee; color: #666; margin-top: 2px; }
@@ -136,6 +137,7 @@
           <input type="range" id="modalBrightnessInput" min="70" max="150" value="100" oninput="onBrightnessChange(this.value)">
         </div>
 
+        <button class="modal-btn btn-rotate" onclick="rotateSelectedPhoto()">🔄 사진 90도 회전</button>
         <button class="modal-btn btn-change" onclick="triggerFileChange()">📷 사진 변경하기</button>
         <button class="modal-btn btn-delete" onclick="deleteSelectedPhoto()">🗑️ 사진 삭제하기</button>
         <button class="modal-btn btn-cancel" onclick="closeModal()">완료 / 닫기</button>
@@ -270,10 +272,10 @@
         text: '',
         textColor: '#000000',
         slots: [
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 }
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 }
         ]
       },
       back: {
@@ -281,10 +283,10 @@
         text: '',
         textColor: '#000000',
         slots: [
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 },
-          { img: null, x: 0, y: 0, scale: 1, brightness: 100 }
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 },
+          { img: null, x: 0, y: 0, scale: 1, brightness: 100, rotation: 0 }
         ]
       }
     };
@@ -411,6 +413,7 @@
           slot.img = img;
           slot.x = 0;
           slot.y = 0;
+          slot.rotation = 0;
           slot.scale = Math.max(slotW / img.width, specs.slotH / img.height);
           slot.brightness = 100;
           
@@ -428,6 +431,16 @@
 
     function triggerFileChange() { fileInput.click(); }
 
+    function rotateSelectedPhoto() {
+      if (selectedSlotIndex !== -1) {
+        const slot = getCurrentSideData().slots[selectedSlotIndex];
+        if (slot.img) {
+          slot.rotation = (slot.rotation + 90) % 360;
+          drawCanvas();
+        }
+      }
+    }
+
     function deleteSelectedPhoto() {
       if (selectedSlotIndex !== -1) {
         const slot = getCurrentSideData().slots[selectedSlotIndex];
@@ -436,6 +449,7 @@
         slot.y = 0;
         slot.scale = 1;
         slot.brightness = 100;
+        slot.rotation = 0;
         closeModal();
         drawCanvas();
       }
@@ -472,7 +486,7 @@
       targetCtx.restore();
     }
 
-    // 단일 키링 렌더링 모듈
+    // 단일 키링 렌더링 모듈 (영문 자간 깨짐 보정 통합)
     function drawSingleKeyring(targetCtx, sideData, isForDownload = false, scaleFactor = 1, headerOffset = 0, offsetX = 0) {
       const sM2P = M2P * scaleFactor;
       const sPrintW = printW * scaleFactor;
@@ -497,7 +511,7 @@
         drawLogoWatermark(targetCtx, scaleFactor, offsetX);
       }
 
-      // 3. 사진 칸 렌더링
+      // 3. 사진 칸 렌더링 (사진 90도 회전 포함)
       for (let i = 0; i < currentCutCount; i++) {
         const slot = sideData.slots[i];
         const currentSlotY = sStartY + i * (sSlotH + sGapY);
@@ -514,6 +528,7 @@
           targetCtx.filter = `brightness(${slot.brightness}%)`;
 
           targetCtx.translate(centerX + (slot.x * scaleFactor), centerY + (slot.y * scaleFactor));
+          targetCtx.rotate((slot.rotation || 0) * Math.PI / 180);
           targetCtx.scale(slot.scale * scaleFactor, slot.scale * scaleFactor);
           targetCtx.drawImage(slot.img, -slot.img.width / 2, -slot.img.height / 2);
         } else {
@@ -527,7 +542,7 @@
         targetCtx.restore();
       }
 
-      // 4. 하단 문구
+      // 4. 하단 문구 (통째 렌더링 방식으로 영문 자간/띄어쓰기 완전 해결)
       const lastSlotY = sStartY + (currentCutCount - 1) * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
@@ -547,33 +562,41 @@
 
         const heartSize = 32 * scaleFactor;
 
-        let totalWidth = 0;
-        for (let char of text) {
-          if (char === '♥' || char === '♡') {
-            totalWidth += heartSize;
-          } else {
-            totalWidth += targetCtx.measureText(char).width;
-          }
-        }
-
-        let startXText = offsetX + (sPrintW - totalWidth) / 2;
-
-        for (let char of text) {
-          if (char === '♥' || char === '♡') {
-            if (heartImg.complete && heartImg.naturalWidth !== 0) {
-              targetCtx.save();
-              targetCtx.drawImage(heartImg, startXText, textAreaY - (heartSize / 2), heartSize, heartSize);
-              targetCtx.restore();
+        // 하트 포함 여부 검사
+        if (text.includes('♥') || text.includes('♡')) {
+          let totalWidth = 0;
+          for (let char of text) {
+            if (char === '♥' || char === '♡') {
+              totalWidth += heartSize;
             } else {
-              targetCtx.fillStyle = '#FF2D55';
-              targetCtx.fillText('♥', startXText, textAreaY);
+              totalWidth += targetCtx.measureText(char).width;
             }
-            startXText += heartSize;
-          } else {
-            targetCtx.fillStyle = textColor;
-            targetCtx.fillText(char, startXText, textAreaY);
-            startXText += targetCtx.measureText(char).width;
           }
+
+          let startXText = offsetX + (sPrintW - totalWidth) / 2;
+
+          for (let char of text) {
+            if (char === '♥' || char === '♡') {
+              if (heartImg.complete && heartImg.naturalWidth !== 0) {
+                targetCtx.save();
+                targetCtx.drawImage(heartImg, startXText, textAreaY - (heartSize / 2), heartSize, heartSize);
+                targetCtx.restore();
+              } else {
+                targetCtx.fillStyle = '#FF2D55';
+                targetCtx.fillText('♥', startXText, textAreaY);
+              }
+              startXText += heartSize;
+            } else {
+              targetCtx.fillStyle = textColor;
+              targetCtx.fillText(char, startXText, textAreaY);
+              startXText += targetCtx.measureText(char).width;
+            }
+          }
+        } else {
+          // 일반 문구/영문: fillText 통째 렌더링으로 자간 완벽 보정
+          targetCtx.fillStyle = textColor;
+          targetCtx.textAlign = 'center';
+          targetCtx.fillText(text, offsetX + (sPrintW / 2), textAreaY);
         }
         
         targetCtx.restore();
@@ -733,7 +756,7 @@
     window.addEventListener('touchmove', handleMove, { passive: false });
     window.addEventListener('touchend', () => { isDragging = false; initialPinchDist = null; });
 
-    // 시안 상단 헤더 띠 포함 고화질 저장 로직 (1안 카카오톡 바로가기 버튼 탑재)
+    // 시안 저장 로직
     function downloadDesign() {
       closeModal();
       
@@ -798,7 +821,6 @@
                 </style>
               </head>
               <body>
-                <!-- 최상단 카카오톡 채널 채팅창 이동 버튼 -->
                 <a class="btn-kakao" href="http://pf.kakao.com/_LxjGiC/chat" target="_blank">💬 저장 후 카톡으로 시안 전송하기</a>
                 <p>👇 아래 이미지를 1초간 '꾹' 눌러 [이미지 저장]을 완료하신 후 위 카카오톡 버튼을 눌러주세요!</p>
                 <img src="${dataUrl}" alt="네컷키링 시안">
