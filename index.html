@@ -194,11 +194,11 @@
         </div>
       </div>
 
-      <!-- 4. 문구 입력 -->
+      <!-- 4. 문구 입력 (날짜/영문 포함 16자, 폭 초과 시 잘림) -->
       <div class="control-group">
-        <label>4. 하단 문구 입력 (하트 포함 8자까지)</label>
+        <label>4. 하단 문구 입력 (칸 폭에 맞춰 자유 입력)</label>
         <div class="input-wrapper">
-          <input type="text" id="textInput" class="input-text" maxlength="8" placeholder="최대 8자 입력" oninput="onTextInput()">
+          <input type="text" id="textInput" class="input-text" maxlength="16" placeholder="날짜/영문 포함 입력 (폭 초과 시 잘림)" oninput="onTextInput()">
           <button class="btn-heart" type="button" onclick="insertHeart('♥')">♥ 하트</button>
         </div>
         <div class="radio-group">
@@ -389,7 +389,7 @@
     }
 
     function insertHeart(symbol) {
-      if (textInput.value.length >= 8) return;
+      if (textInput.value.length >= 16) return;
       const start = textInput.selectionStart;
       const end = textInput.selectionEnd;
       const text = textInput.value;
@@ -486,7 +486,7 @@
       targetCtx.restore();
     }
 
-    // 단일 키링 렌더링 모듈 (영문 자간 깨짐 보정 통합)
+    // 단일 키링 렌더링 모듈
     function drawSingleKeyring(targetCtx, sideData, isForDownload = false, scaleFactor = 1, headerOffset = 0, offsetX = 0) {
       const sM2P = M2P * scaleFactor;
       const sPrintW = printW * scaleFactor;
@@ -511,7 +511,7 @@
         drawLogoWatermark(targetCtx, scaleFactor, offsetX);
       }
 
-      // 3. 사진 칸 렌더링 (사진 90도 회전 포함)
+      // 3. 사진 칸 렌더링
       for (let i = 0; i < currentCutCount; i++) {
         const slot = sideData.slots[i];
         const currentSlotY = sStartY + i * (sSlotH + sGapY);
@@ -542,7 +542,7 @@
         targetCtx.restore();
       }
 
-      // 4. 하단 문구 (통째 렌더링 방식으로 영문 자간/띄어쓰기 완전 해결)
+      // 4. 하단 문구 (고정 폰트 크기 유지, 좌우 여백 초과 시 클리핑으로 잘림)
       const lastSlotY = sStartY + (currentCutCount - 1) * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
@@ -562,7 +562,6 @@
 
         const heartSize = 32 * scaleFactor;
 
-        // 하트 포함 여부 검사
         if (text.includes('♥') || text.includes('♡')) {
           let totalWidth = 0;
           for (let char of text) {
@@ -593,7 +592,6 @@
             }
           }
         } else {
-          // 일반 문구/영문: fillText 통째 렌더링으로 자간 완벽 보정
           targetCtx.fillStyle = textColor;
           targetCtx.textAlign = 'center';
           targetCtx.fillText(text, offsetX + (sPrintW / 2), textAreaY);
