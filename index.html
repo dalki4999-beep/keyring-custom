@@ -40,9 +40,9 @@
 
     .main-layout { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 800px; width: 100%; align-items: flex-start; }
     
-    /* 캔버스 프리뷰 영역 */
+    /* 캔버스 프리뷰 영역 (정확한 26:71 비율 반영) */
     .preview-section { position: relative; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); width: 100%; max-width: 250px; }
-    .canvas-container { position: relative; width: 162px; height: 445px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
+    .canvas-container { position: relative; width: 162px; height: 442px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); touch-action: none; }
     #keyringCanvas { width: 100%; height: 100%; cursor: pointer; }
 
     /* 하단 바텀시트 팝업 모달 */
@@ -542,7 +542,7 @@
         targetCtx.restore();
       }
 
-      // 4. 하단 문구 (고정 폰트 크기 유지, 좌우 여백 초과 시 클리핑으로 잘림)
+      // 4. 하단 문구 (하트 원본 비율 유지 + 좌우 여백 초과 시 잘림)
       const lastSlotY = sStartY + (currentCutCount - 1) * (sSlotH + sGapY) + sSlotH;
       const textAreaY = lastSlotY + (3.0 * sM2P); 
 
@@ -560,13 +560,18 @@
         targetCtx.font = fontStyle;
         targetCtx.textBaseline = 'middle';
 
-        const heartSize = 32 * scaleFactor;
+        // 하트 원본 비율(naturalWidth / naturalHeight) 계산
+        const heartH = 32 * scaleFactor;
+        const heartAspect = (heartImg.complete && heartImg.naturalHeight > 0)
+          ? (heartImg.naturalWidth / heartImg.naturalHeight)
+          : 1;
+        const heartW = heartH * heartAspect;
 
         if (text.includes('♥') || text.includes('♡')) {
           let totalWidth = 0;
           for (let char of text) {
             if (char === '♥' || char === '♡') {
-              totalWidth += heartSize;
+              totalWidth += heartW;
             } else {
               totalWidth += targetCtx.measureText(char).width;
             }
@@ -578,13 +583,13 @@
             if (char === '♥' || char === '♡') {
               if (heartImg.complete && heartImg.naturalWidth !== 0) {
                 targetCtx.save();
-                targetCtx.drawImage(heartImg, startXText, textAreaY - (heartSize / 2), heartSize, heartSize);
+                targetCtx.drawImage(heartImg, startXText, textAreaY - (heartH / 2), heartW, heartH);
                 targetCtx.restore();
               } else {
                 targetCtx.fillStyle = '#FF2D55';
                 targetCtx.fillText('♥', startXText, textAreaY);
               }
-              startXText += heartSize;
+              startXText += heartW;
             } else {
               targetCtx.fillStyle = textColor;
               targetCtx.fillText(char, startXText, textAreaY);
